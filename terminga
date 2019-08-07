@@ -38,8 +38,7 @@ def color_for_state(state):
     return curses.color_pair(-state + 2)
 
 
-def list_items(win, icinga_items, only_broken, match_re):
-    height, width = win.getmaxyx()
+def filter_items(icinga_items, only_broken, match_re):
     hosts = icinga_items['hosts']
     services = icinga_items['services']
 
@@ -54,21 +53,22 @@ def list_items(win, icinga_items, only_broken, match_re):
 
         if host['attrs']['downtime_depth'] > 0:
             hosts_downtime.add(host['name'])
-        if host['name'] in hosts_downtime:
-            continue
-        if only_broken and state == 0:
-            # Is up.
-            continue
+        if only_broken:
+            if host['name'] in hosts_downtime:
+                continue
+            if state == 0:
+                continue
 
         buffered.append((host['name'], 'HOST', -state))
 
     for service in services['results']:
-        if service['attrs']['downtime_depth'] > 0:
-            continue
-        if service['attrs']['host_name'] in hosts_downtime:
-            continue
-        if only_broken and int(service['attrs']['state']) == 0:
-            continue
+        if only_broken:
+            if service['attrs']['downtime_depth'] > 0:
+                continue
+            if service['attrs']['host_name'] in hosts_downtime:
+                continue
+            if int(service['attrs']['state']) == 0:
+                continue
 
         buffered.append((
             service['attrs']['host_name'],
@@ -78,18 +78,22 @@ def list_items(win, icinga_items, only_broken, match_re):
 
     buffered = sorted(buffered, key=itemgetter(2, 0, 1))
 
-    if match_re is not None:
-        match_re_comp = re.compile(match_re, re.I)
-    else:
-        match_re_comp = re.compile('.*', re.I)
-
-    at_y = 1
+    match_re_comp = re.compile(match_re, re.I)
     for host, service, state in buffered:
-        if at_y < height - 1:
-            line_shown = f'{host}: {service}'
-            if match_re_comp.search(line_shown):
-                addstr(win, at_y, 0, line_shown, color_for_state(state))
-                at_y += 1
+        line_shown = f'{host}: {service}'
+        if match_re_comp.search(line_shown):
+            yield line_shown, host, service, state
+
+
+def list_items(win, icinga_items):
+    height, width = win.getmaxyx()
+    at_y = 1
+    for line_shown, host, service, state in icinga_items:
+        if at_y >= height - 1:
+            return
+
+        addstr(win, at_y, 0, line_shown, color_for_state(state))
+        at_y += 1
 
 
 def query_match_re(win):
@@ -117,13 +121,12 @@ def interact(win, icinga):
 
     force_refresh = False
     icinga_items = None
-    match_re = None
+    match_re = '.*'
     only_broken = True
 
     while True:
         win.erase()
 
-        title(win, '')
         status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken'
                      ' | /: Search')
 
@@ -132,12 +135,12 @@ def interact(win, icinga):
             win.refresh()
 
             icinga_items = icinga.get_current_state()
-
-            title(win, '')
-            win.refresh()
             force_refresh = False
 
-        list_items(win, icinga_items, only_broken, match_re)
+        title(win, f'Filter: {match_re}')
+
+        to_display = filter_items(icinga_items, only_broken, match_re)
+        list_items(win, to_display)
 
         win.refresh()
         char = win.getch()
