@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+
+import curses
+import re
+
+from operator import itemgetter
+from os.path import expanduser
+
+from icinga import Icinga
+
+
+VERSION = '1'
+
+
+def addstr(win, *args, **kwargs):
+    try:
+        win.addstr(*args, **kwargs)
+    except curses.error:
+        pass
+
+
+def line(msg, width):
+    return msg + ' ' * (width - len(msg))
+
+
+def title(win, msg):
+    height, width = win.getmaxyx()
+    addstr(win, 0, 0, line(msg, width), curses.color_pair(1))
+
+
+def status(win, msg):
+    height, width = win.getmaxyx()
+    addstr(win, height - 1, 0, line(msg, width), curses.color_pair(1))
+
+
+def color_for_state(state):
+    return curses.color_pair(-state + 2)
+
+
+def list_items(win, icinga_items, only_broken, match_re):
+    height, width = win.getmaxyx()
+    hosts = icinga_items['hosts']
+    services = icinga_items['services']
+
+    hosts_downtime = set()
+    buffered = []
+
+    for host in hosts['results']:
+        if int(host['attrs']['state']) == 0:
+            state = 0
+        else:
+            state = 2
+
+        if host['attrs']['downtime_depth'] > 0:
+            hosts_downtime.add(host['name'])
+        if host['name'] in hosts_downtime:
+            continue
+        if only_broken and state == 0:
+            # Is up.
+            continue
+
+        buffered.append((host['name'], 'HOST', -state))
+
+    for service in services['results']:
+        if service['attrs']['downtime_depth'] > 0:
+            continue
+        if service['attrs']['host_name'] in hosts_downtime:
+            continue
+        if only_broken and int(service['attrs']['state']) == 0:
+            continue
+
+        buffered.append((
+            service['attrs']['host_name'],
+            service['attrs']['display_name'],
+            -int(service['attrs']['state']))
+        )
+
+    buffered = sorted(buffered, key=itemgetter(2, 0, 1))
+
+    if match_re is not None:
+        match_re_comp = re.compile(match_re, re.I)
+    else:
+        match_re_comp = re.compile('.*', re.I)
+
+    at_y = 1
+    for host, service, state in buffered:
+        if at_y < height - 1:
+            line_shown = f'{host}: {service}'
+            if match_re_comp.search(line_shown):
+                addstr(win, at_y, 0, line_shown, color_for_state(state))
+                at_y += 1
+
+
+def query_match_re(win):
+    height, width = win.getmaxyx()
+    addstr(win, 0, 0, line('/', width), curses.color_pair(1))
+
+    curses.curs_set(True)
+    curses.echo()
+    out = win.getstr(0, 1).decode('UTF-8')
+    curses.noecho()
+    curses.curs_set(False)
+
+    return out
+
+
+def interact(win, icinga):
+    curses.curs_set(False)
+
+    curses.use_default_colors()
+    curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    curses.init_pair(2, curses.COLOR_GREEN, -1)
+    curses.init_pair(3, curses.COLOR_YELLOW, -1)
+    curses.init_pair(4, curses.COLOR_RED, -1)
+    curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+
+    force_refresh = False
+    icinga_items = None
+    match_re = None
+    only_broken = True
+
+    while True:
+        win.erase()
+
+        title(win, '')
+        status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken'
+                     ' | /: Search')
+
+        if icinga_items is None or force_refresh:
+            title(win, 'Refreshing ...')
+            win.refresh()
+
+            icinga_items = icinga.get_current_state()
+
+            title(win, '')
+            win.refresh()
+            force_refresh = False
+
+        list_items(win, icinga_items, only_broken, match_re)
+
+        win.refresh()
+        char = win.getch()
+
+        if char in [ord('q')]:
+            return
+        if char in [ord('b')]:
+            only_broken = not only_broken
+        if char in [ord('r')]:
+            force_refresh = True
+        if char in [ord('/')]:
+            match_re = query_match_re(win)
+
+
+if __name__ == '__main__':
+    with open(expanduser('~/.terminga'), 'r') as fp:
+        lines = fp.read().splitlines()
+
+    icinga = Icinga()
+    icinga.settings = {
+        'auth': (lines[1], lines[2]),
+        'base_url': lines[0],
+    }
+
+    curses.wrapper(interact, icinga)
