@@ -85,14 +85,22 @@ def filter_items(icinga_items, only_broken, match_re):
             yield line_shown, host, service, state
 
 
-def list_items(win, icinga_items):
+def list_items(win, offset, current, icinga_items):
     height, width = win.getmaxyx()
-    at_y = 1
-    for line_shown, host, service, state in icinga_items:
+    bottompad = starty = at_y = 1
+    for i, (line_shown, host, service, state) in enumerate(icinga_items):
         if at_y >= height - 1:
             return
 
-        addstr(win, at_y, 0, line_shown, color_for_state(state))
+        if i - offset < 0 or i - offset >= (height - bottompad) - starty:
+            continue
+
+        attrs = color_for_state(state)
+        if i == current:
+            attrs |= curses.A_REVERSE
+
+        addstr(win, at_y, 0, line(line_shown, width), attrs)
+
         at_y += 1
 
 
@@ -119,13 +127,18 @@ def interact(win, icinga):
     curses.init_pair(4, curses.COLOR_RED, -1)
     curses.init_pair(5, curses.COLOR_MAGENTA, -1)
 
+    filter_dirty = True
     force_refresh = False
     icinga_items = None
     match_re = '.*'
     only_broken = True
 
+    current = 0
+    offset = 0
+
     while True:
         win.erase()
+        height, width = win.getmaxyx()
 
         status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken'
                      ' | /: Search')
@@ -137,10 +150,13 @@ def interact(win, icinga):
             icinga_items = icinga.get_current_state()
             force_refresh = False
 
+        if filter_dirty:
+            to_display = list(filter_items(icinga_items, only_broken, match_re))
+            filter_dirty = False
+
         title(win, f'Filter: {match_re}')
 
-        to_display = filter_items(icinga_items, only_broken, match_re)
-        list_items(win, to_display)
+        list_items(win, offset, current, to_display)
 
         win.refresh()
         char = win.getch()
@@ -149,10 +165,41 @@ def interact(win, icinga):
             return
         if char in [ord('b')]:
             only_broken = not only_broken
+            filter_dirty = True
         if char in [ord('r')]:
             force_refresh = True
+            filter_dirty = True
         if char in [ord('/')]:
             match_re = query_match_re(win)
+            filter_dirty = True
+
+        # Scrolling.
+        bottompad = starty = 1
+
+        if char in [ord('j')]: current += 1
+        if char in [ord('k')]: current -= 1
+
+        if char in [ord('g')]: current = 0
+        if char in [ord('G')]: current = len(to_display) - 1
+
+        if char in [6]: current += int(0.5 * (height - starty))  # ^F
+        if char in [2]: current -= int(0.5 * (height - starty))  # ^B
+
+        if current < 0:
+            current = 0
+        if current >= len(to_display):
+            current = len(to_display) - 1
+
+        # Scroll up or down if needed.
+        if current - offset >= (height - bottompad) - starty:
+            offset = current - (height - bottompad) + starty + 1
+        if current - offset <= -1:
+            offset = current
+
+        if offset < 0:
+            offset = 0
+        if offset >= len(to_display):
+            offset = len(to_display) - 1
 
 
 if __name__ == '__main__':
