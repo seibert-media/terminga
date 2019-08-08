@@ -71,8 +71,7 @@ def filter_items(icinga_items, only_broken, match_re):
 
     match_re_comp = re.compile(match_re, re.I)
     for item in buffered:
-        item.line_shown = f'{item.host_name}: {item.service_name}'
-        if match_re_comp.search(item.line_shown):
+        if match_re_comp.search(item.get_line_to_show()):
             yield item
 
 
@@ -93,7 +92,7 @@ def list_items(win, offset, current, icinga_items, selected):
         if item in selected:
             attrs |= curses.A_BOLD
 
-        addstr(win, at_y, 0, line(item.line_shown, width), attrs)
+        addstr(win, at_y, 0, line(item.get_line_to_show(), width), attrs)
 
         at_y += 1
 
