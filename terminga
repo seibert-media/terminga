@@ -160,6 +160,7 @@ def interact(win, icinga):
             selected = set()
             icinga_items = icinga.get_current_state()
             last_key = datetime.now()
+            filter_dirty = True
             scroll_dirty = True
             force_refresh = False
 
@@ -201,7 +202,6 @@ def interact(win, icinga):
             force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
-            filter_dirty = True
         if char in [ord('/')]:
             match_re = query_string(win, '/')
             filter_dirty = True
