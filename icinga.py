@@ -3,6 +3,39 @@ from datetime import datetime
 from requests import get, post
 
 
+class IcingaItem(object):
+    def __init__(self, json):
+        self.downtime_depth = int(json['attrs']['downtime_depth'])
+        self.state = int(json['attrs']['state'])
+        self.type = json['type']
+
+        self.line_shown = None
+
+        if self.type == 'Service':
+            self.host_name = json['attrs']['host_name']
+            self.service_name = json['attrs']['display_name']
+        else:
+            if self.state != 0:
+                self.state = 2
+            self.host_name = json['attrs']['display_name']
+            self.service_name = 'HOST'
+
+    def __lt__(self, other):
+        if self.state == other.state:
+            if self.host_name == other.host_name:
+                return self.service_name < other.service_name
+            else:
+                return self.host_name < other.host_name
+        else:
+            return -self.state < -other.state
+
+    def get_filter(self):
+        f = f'match("{self.host_name}", host.name)'
+        if self.type == 'Service':
+            f += f' && match("{self.service_name}", service.name)'
+        return f
+
+
 class Icinga(object):
     def _api(self, endpoint):
         return self.settings['base_url'] + '/api/v1/' + endpoint
@@ -17,8 +50,8 @@ class Icinga(object):
         services = r.json()
 
         return {
-            'hosts': hosts,
-            'services': services,
+            'hosts': [IcingaItem(i) for i in hosts['results']],
+            'services': [IcingaItem(i) for i in services['results']],
         }
 
     def set_downtime(self, items, seconds):
@@ -27,40 +60,18 @@ class Icinga(object):
 
         # TODO Parallelize.
         for i in items:
-            if len(i) == 1:
-                self._set_downtime_host(i[0], start_time, end_time)
-            elif len(i) == 2:
-                self._set_downtime_service(i[0], i[1], start_time, end_time)
-
-    def _set_downtime_host(self, host, start_time, end_time):
-        data = {
-            'author': 'terminga',  # FIXME
-            'comment': 'terminga',  # FIXME
-            'start_time': start_time,
-            'end_time': end_time,
-            'type': 'Host',
-            'filter': f'match("{host}", host.name)',
-            'child_options': 'DowntimeTriggeredChildren',
-        }
-        r = post(
-            self._api('actions/schedule-downtime'),
-            auth=self.settings['auth'],
-            headers={'Accept': 'application/json'},
-            json=data,
-        )
-
-    def _set_downtime_service(self, host, service, start_time, end_time):
-        data = {
-            'author': 'terminga',  # FIXME
-            'comment': 'terminga',  # FIXME
-            'start_time': start_time,
-            'end_time': end_time,
-            'type': 'Service',
-            'filter': f'match("{host}", host.name) && match("{service}", service.name)',
-        }
-        r = post(
-            self._api('actions/schedule-downtime'),
-            auth=self.settings['auth'],
-            headers={'Accept': 'application/json'},
-            json=data,
-        )
+            data = {
+                'author': 'terminga',  # FIXME
+                'comment': 'terminga',  # FIXME
+                'start_time': start_time,
+                'end_time': end_time,
+                'type': i.type,
+                'filter': i.get_filter(),
+                'child_options': 'DowntimeTriggeredChildren',
+            }
+            r = post(
+                self._api('actions/schedule-downtime'),
+                auth=self.settings['auth'],
+                headers={'Accept': 'application/json'},
+                json=data,
+            )

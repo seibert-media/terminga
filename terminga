@@ -35,7 +35,7 @@ def status(win, msg):
 
 
 def color_for_state(state):
-    return curses.color_pair(-state + 2)
+    return curses.color_pair(state + 2)
 
 
 def filter_items(icinga_items, only_broken, match_re):
@@ -45,61 +45,52 @@ def filter_items(icinga_items, only_broken, match_re):
     hosts_downtime = set()
     buffered = []
 
-    for host in hosts['results']:
-        if int(host['attrs']['state']) == 0:
-            state = 0
-        else:
-            state = 2
-
-        if host['attrs']['downtime_depth'] > 0:
-            hosts_downtime.add(host['name'])
+    for host in hosts:
+        if host.downtime_depth > 0:
+            hosts_downtime.add(host.host_name)
         if only_broken:
-            if host['name'] in hosts_downtime:
+            if host.host_name in hosts_downtime:
                 continue
-            if state == 0:
+            if host.state == 0:
                 continue
 
-        buffered.append((host['name'], 'HOST', -state))
+        buffered.append(host)
 
-    for service in services['results']:
+    for service in services:
         if only_broken:
-            if service['attrs']['downtime_depth'] > 0:
+            if service.downtime_depth > 0:
                 continue
-            if service['attrs']['host_name'] in hosts_downtime:
+            if service.host_name in hosts_downtime:
                 continue
-            if int(service['attrs']['state']) == 0:
+            if service.state == 0:
                 continue
 
-        buffered.append((
-            service['attrs']['host_name'],
-            service['attrs']['display_name'],
-            -int(service['attrs']['state']))
-        )
+        buffered.append(service)
 
-    buffered = sorted(buffered, key=itemgetter(2, 0, 1))
+    buffered = sorted(buffered)
 
     match_re_comp = re.compile(match_re, re.I)
-    for host, service, state in buffered:
-        line_shown = f'{host}: {service}'
-        if match_re_comp.search(line_shown):
-            yield line_shown, host, service, state
+    for item in buffered:
+        item.line_shown = f'{item.host_name}: {item.service_name}'
+        if match_re_comp.search(item.line_shown):
+            yield item
 
 
 def list_items(win, offset, current, icinga_items):
     height, width = win.getmaxyx()
     bottompad = starty = at_y = 1
-    for i, (line_shown, host, service, state) in enumerate(icinga_items):
+    for i, item in enumerate(icinga_items):
         if at_y >= height - 1:
             return
 
         if i - offset < 0 or i - offset >= (height - bottompad) - starty:
             continue
 
-        attrs = color_for_state(state)
+        attrs = color_for_state(item.state)
         if i == current:
             attrs |= curses.A_REVERSE
 
-        addstr(win, at_y, 0, line(line_shown, width), attrs)
+        addstr(win, at_y, 0, line(item.line_shown, width), attrs)
 
         at_y += 1
 
