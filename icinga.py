@@ -57,7 +57,21 @@ class Icinga(object):
             'services': [IcingaItem(i) for i in services['results']],
         }
 
-    def set_downtime(self, items, seconds):
+    def set_downtime(self, items, comment, duration):
+        if not comment:
+            comment = 'go away'
+
+        if duration.endswith('s'):
+            seconds = int(duration[:-1])
+        elif duration.endswith('m'):
+            seconds = int(duration[:-1]) * 60
+        elif duration.endswith('h'):
+            seconds = int(duration[:-1]) * 60 * 60
+        elif duration.endswith('d'):
+            seconds = int(duration[:-1]) * 60 * 60 * 24
+        else:
+            seconds = 2 * 60 * 60
+
         start_time = datetime.now().timestamp()
         end_time = start_time + seconds
 
@@ -65,7 +79,7 @@ class Icinga(object):
         for i in items:
             data = {
                 'author': getuser(),
-                'comment': 'terminga',  # FIXME
+                'comment': comment,
                 'start_time': start_time,
                 'end_time': end_time,
                 'type': i.type,
