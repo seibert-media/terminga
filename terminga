@@ -5,6 +5,7 @@ import curses
 import re
 
 from curses.textpad import Textbox
+from datetime import datetime, timedelta
 from operator import itemgetter
 from os.path import expanduser
 
@@ -144,18 +145,15 @@ def interact(win, icinga):
     offset = 0
 
     while True:
-        win.erase()
         height, width = win.getmaxyx()
 
-        status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken | '
-                     'd: Downtime | /: Search')
-
         if icinga_items is None or force_refresh:
-            title(win, 'Refreshing ...')
+            status(win, 'Refreshing ...')
             win.refresh()
 
             selected = set()
             icinga_items = icinga.get_current_state()
+            last_key = datetime.now()
             scroll_dirty = True
             force_refresh = False
 
@@ -169,12 +167,17 @@ def interact(win, icinga):
             offset = 0
             scroll_dirty = False
 
+        win.erase()
         title(win, f'Filter: {match_re}')
+        status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken | '
+                     'd: Downtime | /: Search')
 
         list_items(win, offset, current, to_display, selected)
 
         win.refresh()
+        win.timeout(1000)
         char = win.getch()
+        win.timeout(-1)
 
         if char in [ord('q')]:
             return
@@ -228,6 +231,13 @@ def interact(win, icinga):
             offset = 0
         if offset >= len(to_display):
             offset = len(to_display) - 1
+
+        if char != -1:
+            last_key = datetime.now()
+        else:
+            if datetime.now() - last_key > timedelta(seconds=30):
+                force_refresh = True
+                last_key = datetime.now()
 
 
 if __name__ == '__main__':
