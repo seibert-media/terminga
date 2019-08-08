@@ -34,8 +34,9 @@ class IcingaItem(object):
             f += f' && match("{self.service_name}", service.name)'
         return f
 
-    def get_line_to_show(self):
-        return f'{self.host_name}: {self.service_name}'
+    def get_line_to_show(self, len_col1):
+        host_name = self.host_name + ' ' * (len_col1 - len(self.host_name))
+        return f'{host_name}  {self.service_name}'
 
 
 class Icinga(object):
