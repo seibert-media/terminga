@@ -13,8 +13,9 @@ from icinga import Icinga
 
 
 VERSION = '1'
-HELP = f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken | ' + \
-        'c: Clear sel | s: View sel | d: Downtime | /: Search'
+HELP = f'terminga v{VERSION} | ' + \
+        'q: Quit | r: Refresh | b: Only broken | f: Filter | ' + \
+        'c: Clear sel | s: View sel | d: Downtime'
 
 
 def addstr(win, *args, **kwargs):
@@ -202,8 +203,8 @@ def interact(win, icinga):
             force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
-        if char in [ord('/')]:
-            match_re = query_string(win, '/')
+        if char in [ord('f')]:
+            match_re = query_string(win, 'Filter: ')
             filter_dirty = True
 
         # Selections.
