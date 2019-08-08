@@ -1,4 +1,5 @@
 from datetime import datetime
+from getpass import getuser
 
 from requests import get, post
 
@@ -62,7 +63,7 @@ class Icinga(object):
         # TODO Parallelize.
         for i in items:
             data = {
-                'author': 'terminga',  # FIXME
+                'author': getuser(),
                 'comment': 'terminga',  # FIXME
                 'start_time': start_time,
                 'end_time': end_time,
