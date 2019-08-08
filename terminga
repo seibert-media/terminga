@@ -191,7 +191,7 @@ def interact(win, icinga):
         if char in [ord('d')]:
             duration = query_string(win, 'Duration [2h]: ')
             comment = query_string(win, 'Comment [go away]: ')
-            icinga.set_downtime(selected, comment, duration)
+            icinga.set_downtime(selected if selected else to_display, comment, duration)
             force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
