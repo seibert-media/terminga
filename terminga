@@ -119,7 +119,7 @@ def query_string(win, prompt):
     win.touchwin()
     win.refresh()
 
-    return out
+    return out.strip()
 
 
 def interact(win, icinga):
@@ -137,6 +137,7 @@ def interact(win, icinga):
     icinga_items = None
     match_re = '.*'
     only_broken = True
+    scroll_dirty = True
     selected = set()
 
     current = 0
@@ -155,13 +156,18 @@ def interact(win, icinga):
 
             selected = set()
             icinga_items = icinga.get_current_state()
+            scroll_dirty = True
             force_refresh = False
 
         if filter_dirty:
+            to_display = list(filter_items(icinga_items, only_broken, match_re))
+            scroll_dirty = True
+            filter_dirty = False
+
+        if scroll_dirty:
             current = 0
             offset = 0
-            to_display = list(filter_items(icinga_items, only_broken, match_re))
-            filter_dirty = False
+            scroll_dirty = False
 
         title(win, f'Filter: {match_re}')
 
