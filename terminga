@@ -140,6 +140,7 @@ def interact(win, icinga):
     only_broken = True
     scroll_dirty = True
     selected = set()
+    only_selected = False
 
     current = 0
     offset = 0
@@ -170,9 +171,12 @@ def interact(win, icinga):
         win.erase()
         title(win, f'Filter: {match_re}')
         status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken | '
-                     'd: Downtime | /: Search')
+                     'c: Clear sel | s: View sel | d: Downtime | /: Search')
 
-        list_items(win, offset, current, to_display, selected)
+        if only_selected:
+            list_items(win, offset, current, selected, selected)
+        else:
+            list_items(win, offset, current, to_display, selected)
 
         win.refresh()
         win.timeout(1000)
@@ -203,6 +207,12 @@ def interact(win, icinga):
             except KeyError:
                 selected.add(to_display[current])
             current += 1
+
+        if char in [ord('c')]:
+            selected = set()
+        if char in [ord('s')]:
+            only_selected = not only_selected
+            scroll_dirty = True
 
         # Scrolling.
         bottompad = starty = 1
