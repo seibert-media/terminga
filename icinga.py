@@ -17,7 +17,7 @@ class IcingaItem(object):
             if self.state != 0:
                 self.state = 2
             self.host_name = json['attrs']['display_name']
-            self.service_name = 'HOST'
+            self.service_name = '-- HOST --'
 
     def __lt__(self, other):
         if self.state == other.state:
