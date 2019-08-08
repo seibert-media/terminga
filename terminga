@@ -4,6 +4,7 @@
 import curses
 import re
 
+from curses.textpad import Textbox
 from operator import itemgetter
 from os.path import expanduser
 
@@ -102,15 +103,21 @@ def list_items(win, offset, current, icinga_items, selected):
         at_y += 1
 
 
-def query_match_re(win):
+def query_string(win, prompt):
     height, width = win.getmaxyx()
-    addstr(win, 0, 0, line('/', width), curses.color_pair(1))
-
+    addstr(win, 0, 0, prompt, curses.color_pair(1))
     curses.curs_set(True)
-    curses.echo()
-    out = win.getstr(0, 1).decode('UTF-8')
-    curses.noecho()
+    win.refresh()
+
+    editwin = curses.newwin(1, width - len(prompt), 0, 1)
+    box = Textbox(editwin)
+    box.edit()
+    out = box.gather()
+
     curses.curs_set(False)
+    del editwin
+    win.touchwin()
+    win.refresh()
 
     return out
 
@@ -151,6 +158,8 @@ def interact(win, icinga):
             force_refresh = False
 
         if filter_dirty:
+            current = 0
+            offset = 0
             to_display = list(filter_items(icinga_items, only_broken, match_re))
             filter_dirty = False
 
@@ -173,7 +182,7 @@ def interact(win, icinga):
             force_refresh = True
             filter_dirty = True
         if char in [ord('/')]:
-            match_re = query_match_re(win)
+            match_re = query_string(win, '/')
             filter_dirty = True
 
         # Selections.
