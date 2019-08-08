@@ -131,8 +131,8 @@ def interact(win, icinga):
         win.erase()
         height, width = win.getmaxyx()
 
-        status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken'
-                     ' | /: Search')
+        status(win, f'terminga v{VERSION} | q: Quit | r: Refresh | b: Only broken | '
+                     'd: Downtime selected | /: Search')
 
         if icinga_items is None or force_refresh:
             title(win, 'Refreshing ...')
@@ -157,6 +157,9 @@ def interact(win, icinga):
         if char in [ord('b')]:
             only_broken = not only_broken
             filter_dirty = True
+        if char in [ord('d')]:
+            icinga.set_downtime([to_display[current]], 30)
+            force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
             filter_dirty = True
