@@ -56,7 +56,7 @@ def filter_items(icinga_items, only_broken, filters):
         if only_broken:
             if host.host_name in hosts_downtime:
                 continue
-            if host.state == 0:
+            if host.state == 0 or host.state_type == 0:
                 continue
 
         buffered.append(host)
@@ -67,7 +67,7 @@ def filter_items(icinga_items, only_broken, filters):
                 continue
             if service.host_name in hosts_downtime:
                 continue
-            if service.state == 0:
+            if service.state == 0 or service.state_type == 0:
                 continue
 
         buffered.append(service)

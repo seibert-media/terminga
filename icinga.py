@@ -8,6 +8,7 @@ class IcingaItem(object):
     def __init__(self, json):
         self.downtime_depth = int(json['attrs']['downtime_depth'])
         self.state = int(json['attrs']['state'])
+        self.state_type = int(json['attrs']['state_type'])
         self.type = json['type']
 
         if self.type == 'Service':
