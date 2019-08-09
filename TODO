@@ -2,5 +2,6 @@
     -   Backspace does not work?
     -   Umlauts don't work.
 -   Downtime entire host of a service.
+-   Requeue selected checks.
 -   Detailed info of a check.
 -   Help screen instead of hotkey list.
