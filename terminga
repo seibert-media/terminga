@@ -43,7 +43,7 @@ def color_for_state(state):
     return curses.color_pair(state + 2)
 
 
-def filter_items(icinga_items, only_broken, match_re):
+def filter_items(icinga_items, only_broken, filters):
     hosts = icinga_items['hosts']
     services = icinga_items['services']
 
@@ -72,12 +72,18 @@ def filter_items(icinga_items, only_broken, match_re):
 
         buffered.append(service)
 
-    buffered = sorted(buffered)
+    mut_filters = filters[:]
+    while mut_filters:
+        f = mut_filters.pop(0)
+        match_re_comp = re.compile(f, re.I)
 
-    match_re_comp = re.compile(match_re, re.I)
-    for item in buffered:
-        if match_re_comp.search(item.get_line_to_show(0)):
-            yield item
+        new_buffered = []
+        for item in buffered:
+            if match_re_comp.search(item.get_line_to_show(0)):
+                new_buffered.append(item)
+        buffered = new_buffered
+
+    return sorted(buffered)
 
 
 def list_items(win, offset, current, icinga_items, selected):
@@ -105,6 +111,14 @@ def list_items(win, offset, current, icinga_items, selected):
         addstr(win, at_y, 0, line(item.get_line_to_show(max_host_len), width), attrs)
 
         at_y += 1
+
+
+def query_new_filter(win, existing):
+    new = query_string(win, 'Add filter: ')
+    if not new:
+        return existing
+
+    return existing + [new]
 
 
 def query_string(win, prompt):
@@ -136,10 +150,11 @@ def interact(win, icinga):
     curses.init_pair(4, curses.COLOR_RED, -1)
     curses.init_pair(5, curses.COLOR_MAGENTA, -1)
 
+    filters = []
+
     filter_dirty = True
     force_refresh = False
     icinga_items = None
-    match_re = '.*'
     only_broken = True
     scroll_dirty = True
     selected = set()
@@ -166,7 +181,7 @@ def interact(win, icinga):
             force_refresh = False
 
         if filter_dirty:
-            to_display = list(filter_items(icinga_items, only_broken, match_re))
+            to_display = filter_items(icinga_items, only_broken, filters)
             scroll_dirty = True
             filter_dirty = False
 
@@ -177,7 +192,7 @@ def interact(win, icinga):
 
         win.erase()
         title(win, HELP)
-        status(win, f'Filter: {match_re}')
+        status(win, f'Filter: {" > ".join(filters) if filters else "<none>"}')
 
         if only_selected:
             list_items(win, offset, current, selected, selected)
@@ -204,8 +219,12 @@ def interact(win, icinga):
         if char in [ord('r')]:
             force_refresh = True
         if char in [ord('f')]:
-            match_re = query_string(win, 'Filter: ')
+            filters = query_new_filter(win, filters)
             filter_dirty = True
+        if char in [ord('F')]:
+            if filters:
+                filters.pop()
+                filter_dirty = True
 
         # Selections.
         if char in [ord(' ')]:
