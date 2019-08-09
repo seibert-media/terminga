@@ -1,0 +1,6 @@
+-   Better text input.
+    -   Backspace does not work?
+    -   Umlauts don't work.
+-   Downtime entire host of a service.
+-   Detailed info of a check.
+-   Help screen instead of hotkey list.
