@@ -83,7 +83,7 @@ def filter_items(icinga_items, only_broken, filters):
                 new_buffered.append(item)
         buffered = new_buffered
 
-    return sorted(buffered)
+    return buffered
 
 
 def list_items(win, offset, current, icinga_items, selected):
@@ -198,7 +198,10 @@ def interact(win, icinga):
             force_refresh = False
 
         if filter_dirty:
-            to_display = filter_items(icinga_items, only_broken, filters)
+            if only_selected:
+                to_display = sorted(selected)
+            else:
+                to_display = sorted(filter_items(icinga_items, only_broken, filters))
             scroll_dirty = True
             filter_dirty = False
 
@@ -211,10 +214,7 @@ def interact(win, icinga):
         title(win, HELP)
         status(win, f'Filter: {" > ".join(filters) if filters else "<none>"}')
 
-        if only_selected:
-            border_pane = list_items(win, offset, current, sorted(selected), selected)
-        else:
-            border_pane = list_items(win, offset, current, to_display, selected)
+        border_pane = list_items(win, offset, current, to_display, selected)
         height -= border_pane
 
         win.refresh()
@@ -256,7 +256,7 @@ def interact(win, icinga):
             selected = set()
         if char in [ord('s')]:
             only_selected = not only_selected
-            scroll_dirty = True
+            filter_dirty = True
 
         # Scrolling.
         bottompad = starty = 1

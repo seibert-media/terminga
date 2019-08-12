@@ -1,6 +1,10 @@
 Release history for terminga
 
 next
+  [Fixed]
+  - Selecting items and de-selecting them when "only show selected
+    items" is active has been fixed.
+
   [Added]
   - Check output is shown in an extra pane.
 
