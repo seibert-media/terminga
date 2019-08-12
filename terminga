@@ -12,8 +12,8 @@ from os.path import expanduser
 from icinga import Icinga
 
 
-VERSION = '1'
-HELP = f'terminga v{VERSION} | ' + \
+VERSION = 'v1'
+HELP = f'terminga {VERSION} | ' + \
         'q: Quit | r: Refresh | b: Only broken | f: Filter | ' + \
         'c: Clear sel | s: View sel | d: Downtime'
 
