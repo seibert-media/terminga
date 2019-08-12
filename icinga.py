@@ -20,6 +20,8 @@ class IcingaItem(object):
             self.host_name = json['attrs']['display_name']
             self.service_name = '-- HOST --'
 
+        self.output_lines = json['attrs'].get('last_check_result', {}).get('output', '').splitlines()
+
     def __lt__(self, other):
         if self.state == other.state:
             if self.host_name == other.host_name:

@@ -1,4 +1,8 @@
 Release history for terminga
 
+next
+  [Added]
+  - Check output is shown in an extra pane.
+
 v1  2019-08-12
   - This is the initial release of terminga.
