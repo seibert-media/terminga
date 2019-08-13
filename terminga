@@ -237,6 +237,11 @@ def interact(win, icinga):
             win.refresh()
             icinga.set_downtime(selected if selected else to_display, comment, duration)
             force_refresh = True
+        if char in [ord('n')]:
+            status(win, 'Queueing checks ...')
+            win.refresh()
+            icinga.queue_check(selected if selected else to_display)
+            force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
         if char in [ord('f')]:

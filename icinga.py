@@ -61,6 +61,21 @@ class Icinga(object):
             'services': [IcingaItem(i) for i in services['results']],
         }
 
+    def queue_check(self, items):
+        # TODO Parallelize.
+        for i in items:
+            data = {
+                'type': i.type,
+                'filter': i.get_filter(),
+                'force': True,
+            }
+            r = post(
+                self._api('actions/reschedule-check'),
+                auth=self.settings['auth'],
+                headers={'Accept': 'application/json'},
+                json=data,
+            )
+
     def set_downtime(self, items, comment, duration):
         if not comment:
             comment = 'go away'

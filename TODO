@@ -3,6 +3,5 @@
     -   Umlauts don't work.
     -   Cursor keys.
 -   Downtime entire host of a service.
--   Requeue selected checks.
 -   Help screen instead of hotkey list.
 -   setup.py
