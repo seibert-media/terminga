@@ -13,9 +13,7 @@ from icinga import Icinga
 
 
 VERSION = 'v1'
-HELP = f'terminga {VERSION} | ' + \
-        'q: Quit | r: Refresh | b: Only broken | f: Filter | ' + \
-        'c: Clear sel | s: View sel | d: Downtime'
+HELP = f'terminga {VERSION} | q: Quit | h: Help'
 
 
 def addstr(win, *args, **kwargs):
@@ -160,6 +158,40 @@ def query_string(win, prompt):
     return out.strip()
 
 
+def show_help_screen(win):
+    msg = '''
+    q        Quit program
+    h        Help
+
+    r        Refresh
+
+    b        Toggle "show only broken items"
+    d        Put selected / all items in downtime
+    n        Check selected / all items NOW
+
+    f        Add filter regex
+    F        Pop right-most filter
+
+    <Space>  Select / unselect current item
+    s        Toggle "show only selected items"
+    c        Clear selection
+
+    j, k     Scroll one line down / up
+    g, G     Scroll to top / bottom
+    ^F, ^G   Scroll half a page down / up
+    '''
+
+    height, width = win.getmaxyx()
+    at_y = margin_top = margin_bottom = 1
+    for m in msg.strip().splitlines():
+        if at_y >= height - margin_bottom:
+            break
+
+        m = m.strip()
+        addstr(win, at_y, 0, '  ' + m, curses.color_pair(0))
+        at_y += 1
+
+
 def interact(win, icinga):
     curses.curs_set(False)
 
@@ -179,6 +211,7 @@ def interact(win, icinga):
     scroll_dirty = True
     selected = set()
     only_selected = False
+    show_help = False
 
     current = 0
     offset = 0
@@ -215,10 +248,14 @@ def interact(win, icinga):
 
         win.erase()
         title(win, HELP)
-        status(win, f'Filter: {" > ".join(filters) if filters else "<none>"}')
 
-        border_pane = list_items(win, offset, current, to_display, selected)
-        height -= border_pane
+        if show_help:
+            show_help_screen(win)
+            status(win, '')
+        else:
+            status(win, f'Filter: {" > ".join(filters) if filters else "<none>"}')
+            border_pane = list_items(win, offset, current, to_display, selected)
+            height -= border_pane
 
         win.refresh()
         win.timeout(1000)
@@ -227,6 +264,8 @@ def interact(win, icinga):
 
         if char in [ord('q')]:
             return
+        if char in [ord('h')]:
+            show_help = not show_help
         if char in [ord('b')]:
             only_broken = not only_broken
             filter_dirty = True

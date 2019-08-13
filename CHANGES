@@ -8,6 +8,7 @@ next
   [Added]
   - Check output is shown in an extra pane.
   - Implement "check now".
+  - "h" shows a help screen.
 
 v1  2019-08-12
   - This is the initial release of terminga.
