@@ -12,7 +12,7 @@ from os.path import expanduser
 from icinga import Icinga
 
 
-VERSION = 'v1'
+VERSION = 'v1-next'
 HELP = f'terminga {VERSION} | q: Quit | h: Help'
 
 
