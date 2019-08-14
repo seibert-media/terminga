@@ -15,6 +15,25 @@ from icinga import Icinga
 VERSION = 'v1-next'
 HELP = f'terminga {VERSION} | q: Quit | h: Help'
 
+COLORS = {
+    'default': 0,
+    'bar': 1,
+    'state_ok': 2,
+    'state_warning': 3,
+    'state_critical': 4,
+    'state_unknown': 5,
+}
+STATES = {
+    0: 'ok',
+    1: 'warning',
+    2: 'critical',
+    3: 'unknown',
+    'ok': 0,
+    'warning': 1,
+    'critical': 2,
+    'unknown': 3,
+}
+
 
 def addstr(win, *args, **kwargs):
     try:
@@ -29,16 +48,19 @@ def line(msg, width):
 
 def title(win, msg):
     height, width = win.getmaxyx()
-    addstr(win, 0, 0, line(msg, width), curses.color_pair(1))
+    addstr(win, 0, 0, line(msg, width), curses.color_pair(COLORS['bar']))
 
 
 def status(win, msg):
     height, width = win.getmaxyx()
-    addstr(win, height - 1, 0, line(msg, width), curses.color_pair(1))
+    addstr(win, height - 1, 0, line(msg, width), curses.color_pair(COLORS['bar']))
 
 
 def color_for_state(state):
-    return curses.color_pair(state + 2)
+    try:
+        return curses.color_pair(COLORS['state_' + STATES[state]])
+    except:
+        return curses.color_pair(COLORS['default'])
 
 
 def filter_items(icinga_items, only_broken, filters):
@@ -54,7 +76,7 @@ def filter_items(icinga_items, only_broken, filters):
         if only_broken:
             if host.host_name in hosts_downtime:
                 continue
-            if host.state == 0 or host.state_type == 0:
+            if host.state == STATES['ok'] or host.state_type == 0:
                 continue
 
         buffered.append(host)
@@ -65,7 +87,7 @@ def filter_items(icinga_items, only_broken, filters):
                 continue
             if service.host_name in hosts_downtime:
                 continue
-            if service.state == 0 or service.state_type == 0:
+            if service.state == STATES['ok'] or service.state_type == 0:
                 continue
 
         buffered.append(service)
@@ -122,10 +144,10 @@ def list_items(win, offset, current, icinga_items, selected):
 
     if len(output_lines) > 0:
         at_y = margin_top + usable_height_for_items
-        addstr(win, at_y, 0, line('', width), curses.color_pair(1))
+        addstr(win, at_y, 0, line('', width), curses.color_pair(COLORS['bar']))
         at_y += 1
         for output in output_lines:
-            addstr(win, at_y, 0, line(output, width), curses.color_pair(0))
+            addstr(win, at_y, 0, line(output, width), curses.color_pair(COLORS['default']))
             at_y += 1
 
     return used_by_output_pane
@@ -141,7 +163,7 @@ def query_new_filter(win, existing):
 
 def query_string(win, prompt):
     height, width = win.getmaxyx()
-    addstr(win, height - 1, 0, prompt, curses.color_pair(1))
+    addstr(win, height - 1, 0, prompt, curses.color_pair(COLORS['bar']))
     curses.curs_set(True)
     win.refresh()
 
@@ -189,7 +211,7 @@ def show_help_screen(win):
             break
 
         m = m.strip()
-        addstr(win, at_y, 0, '  ' + m, curses.color_pair(0))
+        addstr(win, at_y, 0, '  ' + m, curses.color_pair(COLORS['default']))
         at_y += 1
 
 
@@ -197,11 +219,11 @@ def interact(win, icinga):
     curses.curs_set(False)
 
     curses.use_default_colors()
-    curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLUE)
-    curses.init_pair(2, curses.COLOR_GREEN, -1)
-    curses.init_pair(3, curses.COLOR_YELLOW, -1)
-    curses.init_pair(4, curses.COLOR_RED, -1)
-    curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+    curses.init_pair(COLORS['bar'], curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    curses.init_pair(COLORS['state_ok'], curses.COLOR_GREEN, -1)
+    curses.init_pair(COLORS['state_warning'], curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLORS['state_critical'], curses.COLOR_RED, -1)
+    curses.init_pair(COLORS['state_unknown'], curses.COLOR_MAGENTA, -1)
 
     filters = []
 
