@@ -61,16 +61,53 @@ class Icinga(object):
             'services': [IcingaItem(i) for i in services['results']],
         }
 
-    def queue_check(self, items):
-        # TODO Parallelize.
-        for i in items:
+    def _queue_check_typed(self, items, item_type):
+        items = [i for i in items if i.type == item_type]
+
+        chunk_size = 100
+        for c in range(0, len(items), chunk_size):
+            filters = []
+            for i in items[c:c + chunk_size]:
+                filters.append('(' + i.get_filter() + ')')
+
             data = {
-                'type': i.type,
-                'filter': i.get_filter(),
+                'type': item_type,
+                'filter': ' || '.join(filters),
                 'force': True,
             }
             r = post(
                 self._api('actions/reschedule-check'),
+                auth=self.settings['auth'],
+                headers={'Accept': 'application/json'},
+                json=data,
+            )
+
+
+    def queue_check(self, items):
+        self._queue_check_typed(items, 'Host')
+        self._queue_check_typed(items, 'Service')
+
+    def _set_downtime_typed(self, items, comment, start_time, end_time, item_type):
+        items = [i for i in items if i.type == item_type]
+
+        chunk_size = 100
+        for c in range(0, len(items), chunk_size):
+            filters = []
+            for i in items[c:c + chunk_size]:
+                filters.append('(' + i.get_filter() + ')')
+
+            data = {
+                'author': getuser(),
+                'comment': comment,
+                'start_time': start_time,
+                'end_time': end_time,
+                'type': item_type,
+                'filter': ' || '.join(filters),
+                'child_options': 'DowntimeTriggeredChildren',
+            }
+
+            r = post(
+                self._api('actions/schedule-downtime'),
                 auth=self.settings['auth'],
                 headers={'Accept': 'application/json'},
                 json=data,
@@ -94,20 +131,5 @@ class Icinga(object):
         start_time = datetime.now().timestamp()
         end_time = start_time + seconds
 
-        # TODO Parallelize.
-        for i in items:
-            data = {
-                'author': getuser(),
-                'comment': comment,
-                'start_time': start_time,
-                'end_time': end_time,
-                'type': i.type,
-                'filter': i.get_filter(),
-                'child_options': 'DowntimeTriggeredChildren',
-            }
-            r = post(
-                self._api('actions/schedule-downtime'),
-                auth=self.settings['auth'],
-                headers={'Accept': 'application/json'},
-                json=data,
-            )
+        self._set_downtime_typed(items, comment, start_time, end_time, 'Host')
+        self._set_downtime_typed(items, comment, start_time, end_time, 'Service')
