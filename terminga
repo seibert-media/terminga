@@ -282,7 +282,10 @@ def interact(win, icinga):
 
         win.refresh()
         win.timeout(1000)
-        char = win.getch()
+        try:
+            char = win.getkey()
+        except:
+            char = None
         win.timeout(-1)
 
         if selected:
@@ -293,62 +296,62 @@ def interact(win, icinga):
             except IndexError:
                 items_for_action = set()
 
-        if char in [ord('q')]:
+        if char in ['q']:
             return
-        if char in [ord('h')]:
+        if char in ['h']:
             show_help = not show_help
-        if char in [ord('b')]:
+        if char in ['b']:
             only_broken = not only_broken
             filter_dirty = True
-        if char in [ord('d')]:
+        if char in ['d']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
             comment = query_string(win, 'Comment: ')
             status(win, 'Setting downtime ...')
             win.refresh()
             icinga.set_downtime(items_for_action, comment, duration)
             force_refresh = True
-        if char in [ord('n')]:
+        if char in ['n']:
             status(win, 'Queueing checks ...')
             win.refresh()
             icinga.queue_check(items_for_action)
             force_refresh = True
-        if char in [ord('r')]:
+        if char in ['r']:
             force_refresh = True
-        if char in [ord('f')]:
+        if char in ['f']:
             filters = query_new_filter(win, filters)
             filter_dirty = True
-        if char in [ord('F')]:
+        if char in ['F']:
             if filters:
                 filters.pop()
                 filter_dirty = True
 
         # Selections.
-        if char in [ord(' ')]:
+        if char in [' ']:
             try:
                 selected.remove(to_display[current])
             except KeyError:
                 selected.add(to_display[current])
             current += 1
 
-        if char in [ord('a')]:
+        if char in ['a']:
             selected = to_display
-        if char in [ord('c')]:
+        if char in ['c']:
             selected = set()
-        if char in [ord('s')]:
+        if char in ['s']:
             only_selected = not only_selected
             filter_dirty = True
 
         # Scrolling.
         bottompad = starty = 1
 
-        if char in [ord('j')]: current += 1
-        if char in [ord('k')]: current -= 1
+        if char in ['j', 'KEY_DOWN']: current += 1
+        if char in ['k', 'KEY_UP']: current -= 1
 
-        if char in [ord('g')]: current = 0
-        if char in [ord('G')]: current = len(to_display) - 1
+        if char in ['g', 'KEY_HOME']: current = 0
+        if char in ['G', 'KEY_END']: current = len(to_display) - 1
 
-        if char in [6]: current += int(0.5 * (height - starty))  # ^F
-        if char in [2]: current -= int(0.5 * (height - starty))  # ^B
+        if char in [chr(6), '^F', 'KEY_NPAGE']: current += int(0.5 * (height - starty))
+        if char in [chr(2), '^B', 'KEY_PPAGE']: current -= int(0.5 * (height - starty))
 
         if current < 0:
             current = 0
@@ -366,7 +369,7 @@ def interact(win, icinga):
         if offset >= len(to_display):
             offset = len(to_display) - 1
 
-        if char != -1:
+        if char is not None:
             last_key = datetime.now()
         else:
             if datetime.now() - last_key > timedelta(seconds=30):
