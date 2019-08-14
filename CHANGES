@@ -17,6 +17,7 @@ next
   - Implement "check now".
   - "h" shows a help screen.
   - "Normal" keys like cursor keys work now.
+  - "D" puts entire host in downtime.
 
 v1  2019-08-12
   - This is the initial release of terminga.

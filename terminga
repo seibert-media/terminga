@@ -189,6 +189,7 @@ def show_help_screen(win):
 
     b        Toggle "show only broken items"
     d        Put current / selected items in downtime
+    D        Put current / selected host and all its services in downtime
     n        Check current / selected items NOW
 
     f        Add filter regex
@@ -303,12 +304,15 @@ def interact(win, icinga):
         if char in ['b']:
             only_broken = not only_broken
             filter_dirty = True
-        if char in ['d']:
+        if char in ['d', 'D']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
             comment = query_string(win, 'Comment: ')
             status(win, 'Setting downtime ...')
             win.refresh()
-            icinga.set_downtime(items_for_action, comment, duration)
+            if char == 'd':
+                icinga.set_downtime(items_for_action, comment, duration)
+            else:
+                icinga.set_downtime_for_host(items_for_action, comment, duration)
             force_refresh = True
         if char in ['n']:
             status(win, 'Queueing checks ...')

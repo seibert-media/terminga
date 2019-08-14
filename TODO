@@ -2,7 +2,6 @@
     -   Backspace does not work? (Only in VTE terminals?)
     -   Umlauts don't work.
     -   Cursor keys. (Only in VTE terminals?)
--   Downtime entire host of a service.
 -   setup.py
 -   Press "t" to launch an external tool on selected items, e.g. for
     creating JIRA tickets.

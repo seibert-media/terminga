@@ -5,7 +5,13 @@ from requests import get, post
 
 
 class IcingaItem(object):
-    def __init__(self, json):
+    def __init__(self, json, only_host_name=None):
+        if json is None and only_host_name:
+            self.host_name = only_host_name
+            self.service_name = '-- HOST --'
+            self.type = 'Host'
+            return
+
         self.downtime_depth = int(json['attrs']['downtime_depth'])
         self.state = int(json['attrs']['state'])
         self.state_type = int(json['attrs']['state_type'])
@@ -136,3 +142,14 @@ class Icinga(object):
 
         self._set_downtime_typed(items, comment, start_time, end_time, 'Host')
         self._set_downtime_typed(items, comment, start_time, end_time, 'Service')
+
+    def set_downtime_for_host(self, items, comment, duration):
+        host_names = set()
+        for i in items:
+            host_names.add(i.host_name)
+
+        dummys = set()
+        for i in host_names:
+            dummys.add(IcingaItem(None, only_host_name=i))
+
+        self.set_downtime(dummys, comment, duration)
