@@ -20,6 +20,7 @@ next
   - "D" puts entire host in downtime.
   - "H" adds the host name of the currently selected item to the filter
     list.
+  - "t" runs an external program on selected items.
 
 v1  2019-08-12
   - This is the initial release of terminga.

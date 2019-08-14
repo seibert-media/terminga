@@ -8,6 +8,8 @@ from curses.textpad import Textbox
 from datetime import datetime, timedelta
 from operator import itemgetter
 from os.path import expanduser
+from signal import signal, SIGCHLD, SIG_IGN
+from subprocess import Popen
 
 from icinga import Icinga
 
@@ -180,6 +182,15 @@ def query_string(win, prompt):
     return out.strip()
 
 
+def run_external_tool(items, external_tool):
+    if not external_tool:
+        return
+
+    signal(SIGCHLD, SIG_IGN)
+    for i in items:
+        Popen([external_tool, '-h', i.host_name, '-s', i.service_name])
+
+
 def show_help_screen(win):
     msg = '''
     q        Quit program
@@ -191,6 +202,7 @@ def show_help_screen(win):
     d        Put current / selected items in downtime
     D        Put current / selected host and all its services in downtime
     n        Check current / selected items NOW
+    t        Launch external tool on current item
 
     f        Add filter regex
     F        Pop right-most filter
@@ -217,7 +229,7 @@ def show_help_screen(win):
         at_y += 1
 
 
-def interact(win, icinga):
+def interact(win, icinga, external_tool):
     curses.curs_set(False)
 
     curses.use_default_colors()
@@ -320,6 +332,8 @@ def interact(win, icinga):
             win.refresh()
             icinga.queue_check(items_for_action)
             force_refresh = True
+        if char in ['t']:
+            run_external_tool(items_for_action, external_tool)
         if char in ['r']:
             force_refresh = True
         if char in ['f']:
@@ -398,4 +412,9 @@ if __name__ == '__main__':
         'base_url': lines[0],
     }
 
-    curses.wrapper(interact, icinga)
+    if len(lines) >= 4:
+        external_tool = lines[3]
+    else:
+        external_tool = None
+
+    curses.wrapper(interact, icinga, external_tool)
