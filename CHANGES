@@ -9,6 +9,8 @@ next
   - Actions (i.e., "set downtime" and "check now") now work on item
     under the cursor if nothing has been selected. (Previously, these
     actions worked on *all* items if nothing had been selected.)
+  - "Set downtime" no longer has default values. Entering empty or
+    invalid strings aborts.
 
   [Added]
   - Check output is shown in an extra pane.

@@ -114,19 +114,22 @@ class Icinga(object):
             )
 
     def set_downtime(self, items, comment, duration):
-        if not comment:
-            comment = 'go away'
+        if not comment or not duration:
+            return
 
-        if duration.endswith('s'):
-            seconds = int(duration[:-1])
-        elif duration.endswith('m'):
-            seconds = int(duration[:-1]) * 60
-        elif duration.endswith('h'):
-            seconds = int(duration[:-1]) * 60 * 60
-        elif duration.endswith('d'):
-            seconds = int(duration[:-1]) * 60 * 60 * 24
-        else:
-            seconds = 2 * 60 * 60
+        try:
+            if duration.endswith('s'):
+                seconds = int(duration[:-1])
+            elif duration.endswith('m'):
+                seconds = int(duration[:-1]) * 60
+            elif duration.endswith('h'):
+                seconds = int(duration[:-1]) * 60 * 60
+            elif duration.endswith('d'):
+                seconds = int(duration[:-1]) * 60 * 60 * 24
+            else:
+                return
+        except:
+            return
 
         start_time = datetime.now().timestamp()
         end_time = start_time + seconds

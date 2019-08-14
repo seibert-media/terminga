@@ -279,8 +279,8 @@ def interact(win, icinga):
             only_broken = not only_broken
             filter_dirty = True
         if char in [ord('d')]:
-            duration = query_string(win, 'Duration [2h]: ')
-            comment = query_string(win, 'Comment [go away]: ')
+            duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
+            comment = query_string(win, 'Comment: ')
             status(win, 'Setting downtime ...')
             win.refresh()
             icinga.set_downtime(items_for_action, comment, duration)
