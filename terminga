@@ -194,6 +194,7 @@ def show_help_screen(win):
 
     f        Add filter regex
     F        Pop right-most filter
+    H        Add host name of currently selected item to filters
 
     <Space>  Select / unselect current item
     a        Select all currently visible items
@@ -328,6 +329,12 @@ def interact(win, icinga):
             if filters:
                 filters.pop()
                 filter_dirty = True
+        if char in ['H']:
+            try:
+                filters.append(to_display[current].host_name)
+                filter_dirty = True
+            except IndexError:
+                pass
 
         # Selections.
         if char in [' ']:
