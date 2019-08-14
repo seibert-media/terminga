@@ -166,13 +166,14 @@ def show_help_screen(win):
     r        Refresh
 
     b        Toggle "show only broken items"
-    d        Put selected / all items in downtime
-    n        Check selected / all items NOW
+    d        Put current / selected items in downtime
+    n        Check current / selected items NOW
 
     f        Add filter regex
     F        Pop right-most filter
 
     <Space>  Select / unselect current item
+    a        Select all currently visible items
     s        Toggle "show only selected items"
     c        Clear selection
 
@@ -262,6 +263,14 @@ def interact(win, icinga):
         char = win.getch()
         win.timeout(-1)
 
+        if selected:
+            items_for_action = selected
+        else:
+            try:
+                items_for_action = set([to_display[current]])
+            except IndexError:
+                items_for_action = set()
+
         if char in [ord('q')]:
             return
         if char in [ord('h')]:
@@ -274,12 +283,12 @@ def interact(win, icinga):
             comment = query_string(win, 'Comment [go away]: ')
             status(win, 'Setting downtime ...')
             win.refresh()
-            icinga.set_downtime(selected if selected else to_display, comment, duration)
+            icinga.set_downtime(items_for_action, comment, duration)
             force_refresh = True
         if char in [ord('n')]:
             status(win, 'Queueing checks ...')
             win.refresh()
-            icinga.queue_check(selected if selected else to_display)
+            icinga.queue_check(items_for_action)
             force_refresh = True
         if char in [ord('r')]:
             force_refresh = True
@@ -299,6 +308,8 @@ def interact(win, icinga):
                 selected.add(to_display[current])
             current += 1
 
+        if char in [ord('a')]:
+            selected = to_display
         if char in [ord('c')]:
             selected = set()
         if char in [ord('s')]:

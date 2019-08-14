@@ -5,6 +5,11 @@ next
   - Selecting items and de-selecting them when "only show selected
     items" is active has been fixed.
 
+  [Changed]
+  - Actions (i.e., "set downtime" and "check now") now work on item
+    under the cursor if nothing has been selected. (Previously, these
+    actions worked on *all* items if nothing had been selected.)
+
   [Added]
   - Check output is shown in an extra pane.
   - Implement "check now".
