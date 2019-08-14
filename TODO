@@ -5,3 +5,4 @@
 -   setup.py
 -   Press "t" to launch an external tool on selected items, e.g. for
     creating JIRA tickets.
+-   Add host name of currently selected item to filters.
