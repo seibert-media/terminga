@@ -15,10 +15,10 @@ next
   [Added]
   - Check output is shown in an extra pane.
   - Implement "check now".
-  - "h" shows a help screen.
+  - "?" shows a help screen.
   - "Normal" keys like cursor keys work now.
   - "D" puts entire host in downtime.
-  - "H" adds the host name of the currently selected item to the filter
+  - "h" adds the host name of the currently selected item to the filter
     list.
   - "t" runs an external program on selected items.
 

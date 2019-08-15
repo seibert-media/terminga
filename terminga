@@ -15,7 +15,7 @@ from icinga import Icinga
 
 
 VERSION = 'v1-next'
-HELP = f'terminga {VERSION} | q: Quit | h: Help'
+HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
     'default': 0,
@@ -194,7 +194,7 @@ def run_external_tool(items, external_tool):
 def show_help_screen(win):
     msg = '''
     q        Quit program
-    h        Help
+    ?        Help
 
     r        Refresh
 
@@ -206,7 +206,7 @@ def show_help_screen(win):
 
     f        Add filter regex
     F        Pop right-most filter
-    H        Add host name of currently selected item to filters
+    h        Add host name of currently selected item to filters
 
     <Space>  Select / unselect current item
     a        Select all currently visible items
@@ -312,7 +312,7 @@ def interact(win, icinga, external_tool):
 
         if char in ['q']:
             return
-        if char in ['h']:
+        if char in ['?']:
             show_help = not show_help
         if char in ['b']:
             only_broken = not only_broken
@@ -343,7 +343,7 @@ def interact(win, icinga, external_tool):
             if filters:
                 filters.pop()
                 filter_dirty = True
-        if char in ['H']:
+        if char in ['h']:
             try:
                 filters.append(to_display[current].host_name)
                 filter_dirty = True
