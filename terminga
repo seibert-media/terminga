@@ -234,6 +234,26 @@ def show_help_screen(win):
         at_y += 1
 
 
+def standard_status(win, filters, only_broken, only_selected, refresh_delta, refresh_every):
+    height, width = win.getmaxyx()
+
+    flt = f'Filter: {" > ".join(filters) if filters else "<none>"}'
+
+    indicators = f'[{"b" if only_broken else "-"}{"s" if only_selected else "-"}]'
+    fraction = refresh_delta.total_seconds() / refresh_every.total_seconds()
+    fraction = max(0, min(1, fraction))
+    fill_len = 10
+    fill = int(fill_len * fraction)
+    fill_pad = fill_len - fill
+    indicators = '[' + '#' * fill + ' ' * fill_pad + ']' + indicators
+
+    msg = flt
+    msg += ' ' * max(0, width - len(flt) - len(indicators))
+    msg += indicators
+
+    return msg
+
+
 def interact(win, icinga, external_tool):
     curses.curs_set(False)
 
@@ -255,6 +275,9 @@ def interact(win, icinga, external_tool):
     only_selected = False
     show_help = False
 
+    refresh_every = timedelta(seconds=30)
+    refresh_delta = timedelta(seconds=0)
+
     current = 0
     offset = 0
 
@@ -271,6 +294,7 @@ def interact(win, icinga, external_tool):
             selected = set()
             icinga_items = icinga.get_current_state()
             last_key = datetime.now()
+            refresh_delta = timedelta(seconds=0)
             filter_dirty = True
             scroll_dirty = True
             force_refresh = False
@@ -295,7 +319,10 @@ def interact(win, icinga, external_tool):
             show_help_screen(win)
             status(win, '')
         else:
-            status(win, f'Filter: {" > ".join(filters) if filters else "<none>"}')
+            status(win, standard_status(
+                win, filters, only_broken, only_selected,
+                refresh_delta, refresh_every,
+            ))
             border_pane = list_items(win, offset, current, to_display, selected)
             height -= border_pane
 
@@ -401,8 +428,10 @@ def interact(win, icinga, external_tool):
 
         if char is not None:
             last_key = datetime.now()
+            refresh_delta = timedelta(seconds=0)
         else:
-            if datetime.now() - last_key > timedelta(seconds=30):
+            refresh_delta = datetime.now() - last_key
+            if refresh_delta > refresh_every:
                 force_refresh = True
                 last_key = datetime.now()
 
