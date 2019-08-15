@@ -188,7 +188,12 @@ def run_external_tool(items, external_tool):
 
     signal(SIGCHLD, SIG_IGN)
     for i in items:
-        Popen([external_tool, '-h', i.host_name, '-s', i.service_name])
+        Popen([
+            external_tool,
+            '-h', i.host_name,
+            '-s', i.service_name,
+            '-o', '\n'.join(i.output_lines),
+        ])
 
 
 def show_help_screen(win):

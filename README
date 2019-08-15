@@ -33,8 +33,8 @@ Create ~/.terminga, which consists of at least the first three lines:
 Use a valid API user, not your regular Icinga user.
 
 The last line contains a path to a user-supplied script and this line is
-optional. This script will be invoked with "-h $host -s $service" when
-you press "t" in terminga.
+optional. This script will be invoked with "-h $host -s $service -o
+$output" when you press "t" in terminga.
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:
