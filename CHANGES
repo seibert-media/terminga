@@ -18,8 +18,8 @@ next
   - "?" shows a help screen.
   - "Normal" keys like cursor keys work now.
   - "D" puts entire host in downtime.
-  - "h" adds the host name of the currently selected item to the filter
-    list.
+  - "H" adds the host name of the currently selected item to the filter
+    list, "S" does the same for the service name.
   - "t" runs an external program on selected items.
   - Show some mode indicators and a progress bar that shows the time
     until next auto-refresh.
