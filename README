@@ -28,13 +28,14 @@ Create ~/.terminga, which consists of at least the first three lines:
     https://icinga-terminga-proxy.smedia.tools
     myapiuser
     myapiuserspassword
-    /home/foo/bin/terminga-handler
+    my-tool -h __HOST__ -s __SERVICE__ -o __OUTPUT__
 
 Use a valid API user, not your regular Icinga user.
 
 The last line contains a path to a user-supplied script and this line is
-optional. This script will be invoked with "-h $host -s $service -o
-$output" when you press "t" in terminga.
+optional. It will be invoked when you press "t" in terminga. The
+placeholders will be replaced for each selected item. Note that
+__OUTPUT__ might resolve to an empty string.
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:

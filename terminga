@@ -8,6 +8,7 @@ from curses.textpad import Textbox
 from datetime import datetime, timedelta
 from operator import itemgetter
 from os.path import expanduser
+from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
 
@@ -186,14 +187,22 @@ def run_external_tool(items, external_tool):
     if not external_tool:
         return
 
+    args = split(external_tool)
+
     signal(SIGCHLD, SIG_IGN)
     for i in items:
-        Popen([
-            external_tool,
-            '-h', i.host_name,
-            '-s', i.service_name,
-            '-o', '\n'.join(i.output_lines),
-        ])
+        args_now = []
+        for a in args:
+            if a == '__HOST__':
+                args_now.append(i.host_name)
+            elif a == '__SERVICE__':
+                args_now.append(i.service_name)
+            elif a == '__OUTPUT__':
+                args_now.append('\n'.join(i.output_lines))
+            else:
+                args_now.append(a)
+
+        Popen(args_now)
 
 
 def show_help_screen(win):
