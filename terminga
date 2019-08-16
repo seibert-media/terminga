@@ -255,7 +255,7 @@ def standard_status(win, filters, only_broken, only_selected, refresh_delta, ref
     fill_len = 10
     fill = int(fill_len * fraction)
     fill_pad = fill_len - fill
-    indicators = '[' + '#' * fill + ' ' * fill_pad + ']' + indicators
+    indicators = '[' + '#' * fill + '-' * fill_pad + ']' + indicators
 
     msg = flt
     msg += ' ' * max(0, width - len(flt) - len(indicators))
