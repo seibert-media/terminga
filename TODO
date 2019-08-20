@@ -5,3 +5,4 @@
 -   setup.py
     -   Must not break a simple "clone and run" workflow, i.e. don't
         *force* users to use pip.
+-   Show an item's downtime/comment history.
