@@ -44,9 +44,11 @@ class IcingaItem(object):
         return f
 
     def get_line_to_show(self, len_col1):
-        prefix = 'D  ' if self.downtime_depth > 0 else '   '
-        host_name = prefix + self.host_name + ' ' * (len_col1 - len(self.host_name))
-        return f'{host_name}  {self.service_name}'
+        prefixes = ''
+        prefixes += 'S' if self.state_type == 0 else ' '
+        prefixes += 'D' if self.downtime_depth > 0 else ' '
+        host_name = self.host_name + ' ' * (len_col1 - len(self.host_name))
+        return f'{prefixes}  {host_name}  {self.service_name}'
 
 
 class Icinga(object):
