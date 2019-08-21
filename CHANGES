@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v2  2019-08-21
   [Fixed]
   - Selecting items and de-selecting them when "only show selected
     items" is active has been fixed.

@@ -15,7 +15,7 @@ from subprocess import Popen
 from icinga import Icinga
 
 
-VERSION = 'v1-next'
+VERSION = 'v2'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
