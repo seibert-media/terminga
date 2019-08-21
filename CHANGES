@@ -20,7 +20,7 @@ next
   - "D" puts entire host in downtime.
   - "H" adds the host name of the currently selected item to the filter
     list, "S" does the same for the service name.
-  - "t" runs an external program on selected items.
+  - "e" runs an external program on selected items.
   - Show some mode indicators and a progress bar that shows the time
     until next auto-refresh.
   - Soft states are now indicated by "S".

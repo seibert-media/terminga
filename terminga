@@ -216,7 +216,7 @@ def show_help_screen(win):
     d        Put current / selected items in downtime
     D        Put current / selected host and all its services in downtime
     n        Check current / selected items NOW
-    t        Launch external tool on current item
+    e        Launch external tool on current item
 
     f        Add filter regex
     F        Pop right-most filter
@@ -374,7 +374,7 @@ def interact(win, icinga, external_tool):
             win.refresh()
             icinga.queue_check(items_for_action)
             force_refresh = True
-        if char in ['t']:
+        if char in ['e']:
             run_external_tool(items_for_action, external_tool)
         if char in ['r']:
             force_refresh = True
