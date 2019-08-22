@@ -90,7 +90,6 @@ class Icinga(object):
                 json=data,
             )
 
-
     def queue_check(self, items):
         self._queue_check_typed(items, 'Host')
         self._queue_check_typed(items, 'Service')
