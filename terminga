@@ -11,6 +11,7 @@ from os.path import expanduser
 from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
+from time import sleep
 
 from icinga import Icinga
 
@@ -159,6 +160,14 @@ def list_items(win, offset, current, icinga_items, selected):
 def query_new_filter(win, existing):
     new = query_string(win, 'Add filter: ')
     if not new:
+        return existing
+
+    try:
+        re.compile(new, re.I)
+    except:
+        status(win, 'Invalid regular expression!')
+        win.refresh()
+        sleep(2)
         return existing
 
     return existing + [new]
