@@ -3,6 +3,8 @@
     -   Umlauts don't work.
     -   Either implement a custom textpad or switch to urwid.
 -   Show duration of current check status ("since when is it down?").
+-   Display whether Icinga notifications have been disabled globally and
+    add a hotkey to change this setting (if this can be done via API).
 -   setup.py
     -   Must not break a simple "clone and run" workflow, i.e. don't
         *force* users to use pip.
