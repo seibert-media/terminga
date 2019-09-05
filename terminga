@@ -16,7 +16,7 @@ from time import sleep
 from icinga import Icinga
 
 
-VERSION = 'v2'
+VERSION = 'v2-next'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
