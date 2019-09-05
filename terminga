@@ -12,6 +12,7 @@ from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
 from time import sleep
+from traceback import print_exc
 
 from icinga import Icinga
 
@@ -472,4 +473,13 @@ if __name__ == '__main__':
     else:
         external_tool = None
 
-    curses.wrapper(interact, icinga, external_tool)
+    while True:
+        try:
+            curses.wrapper(interact, icinga, external_tool)
+            exit(0)
+        except Exception:
+            print('It appears we had a whoopsie. Please report this.')
+            print()
+            print_exc()
+            print()
+            input('Press a key to reset and continue.')

@@ -4,6 +4,9 @@ next
   [Fixed]
   - Entering invalid regular expressions as filters no longer crashes
     the program.
+  - Catch all exceptions on the outermost level, print them, then
+    continue. This saves you the need to write a shell script as a
+    wrapper.
 
 v2  2019-08-21
   [Fixed]
