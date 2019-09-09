@@ -5,6 +5,10 @@
 -   Show duration of current check status ("since when is it down?").
 -   Display whether Icinga notifications have been disabled globally and
     add a hotkey to change this setting (if this can be done via API).
+-   Maybe rewrite the handler to get passed all selected items in one
+    go. Currently, it's not possible to work on more than ~10 items at
+    once, because for each item an individual handler process will be
+    started. That's not feasible.
 -   setup.py
     -   Must not break a simple "clone and run" workflow, i.e. don't
         *force* users to use pip.
