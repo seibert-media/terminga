@@ -37,6 +37,11 @@ class IcingaItem(object):
         else:
             return -self.state < -other.state
 
+    def __str__(self):
+        # Only useful for debugging. Use get_line_to_show() for
+        # formatted output.
+        return f'{self.host_name} {self.service_name}'
+
     def get_filter(self):
         f = f'match("{self.host_name}", host.name)'
         if self.type == 'Service':
