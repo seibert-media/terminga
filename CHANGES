@@ -7,6 +7,7 @@ next
   - Catch all exceptions on the outermost level, print them, then
     continue. This saves you the need to write a shell script as a
     wrapper.
+  - Deselecting items originally selected with "a" has been fixed.
 
 v2  2019-08-21
   [Fixed]

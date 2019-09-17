@@ -413,7 +413,7 @@ def interact(win, icinga, external_tool):
             current += 1
 
         if char in ['a']:
-            selected = to_display
+            selected = set(to_display)
         if char in ['c']:
             selected = set()
         if char in ['s']:
