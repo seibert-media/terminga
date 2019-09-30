@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v3  2019-09-30
   [Fixed]
   - Entering invalid regular expressions as filters no longer crashes
     the program.
