@@ -1,5 +1,10 @@
 Release history for terminga
 
+next
+  [Fixed]
+  - We now only set 20 downtimes in one API request. Icinga crashes with
+    a segfault when we try to set 100.
+
 v3  2019-09-30
   [Fixed]
   - Entering invalid regular expressions as filters no longer crashes
