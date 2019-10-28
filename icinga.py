@@ -77,7 +77,7 @@ class Icinga(object):
     def _queue_check_typed(self, items, item_type):
         items = [i for i in items if i.type == item_type]
 
-        chunk_size = 100
+        chunk_size = 20
         for c in range(0, len(items), chunk_size):
             filters = []
             for i in items[c:c + chunk_size]:
