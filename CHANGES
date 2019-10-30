@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v4  2019-10-30
   [Fixed]
   - We now only set 20 downtimes/re-checks in one API request. Icinga
     crashes with a segfault when we try to set 100.
