@@ -17,7 +17,7 @@ from traceback import print_exc
 from icinga import Icinga
 
 
-VERSION = 'v4'
+VERSION = 'v4-next'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
@@ -230,6 +230,7 @@ def show_help_screen(win):
 
     f        Add filter regex
     F        Pop right-most filter
+    v        Pop left-most filter
     H        Add host name of currently selected item to filters
     S        Add service name of currently selected item to filters
 
@@ -394,6 +395,10 @@ def interact(win, icinga, external_tool):
         if char in ['F']:
             if filters:
                 filters.pop()
+                filter_dirty = True
+        if char in ['v']:
+            if filters:
+                filters.pop(0)
                 filter_dirty = True
         if char in ['H', 'S']:
             try:

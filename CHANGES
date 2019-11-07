@@ -1,5 +1,9 @@
 Release history for terminga
 
+next
+  [Added]
+  - "v" pops the left-most filter.
+
 v4  2019-10-30
   [Fixed]
   - We now only set 20 downtimes/re-checks in one API request. Icinga
