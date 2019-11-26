@@ -17,7 +17,7 @@ from traceback import print_exc
 from icinga import Icinga
 
 
-VERSION = 'v4-next'
+VERSION = 'v5'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
