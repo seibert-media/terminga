@@ -20,6 +20,13 @@ Dependencies
     - python-requests
 
 
+Installation
+------------
+
+Clone this repo and run `terminga`. Don't forget the configuration, of
+course.
+
+
 Configuration
 -------------
 
