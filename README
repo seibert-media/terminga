@@ -33,7 +33,7 @@ Create ~/.terminga, which consists of at least the first three lines:
 Use a valid API user, not your regular Icinga user.
 
 The last line contains a path to a user-supplied script and this line is
-optional. It will be invoked when you press "t" in terminga. The
+optional. It will be invoked when you press "e" in terminga. The
 placeholders will be replaced for each selected item. Note that
 __OUTPUT__ might resolve to an empty string.
 
