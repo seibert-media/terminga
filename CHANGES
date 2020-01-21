@@ -1,5 +1,9 @@
 Release history for terminga
 
+next
+  [Fixed]
+  - Backspace key now works in terminals other than XTerm, too.
+
 v5  2019-11-26
   [Added]
   - "v" pops the left-most filter.

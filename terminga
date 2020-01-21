@@ -17,7 +17,7 @@ from traceback import print_exc
 from icinga import Icinga
 
 
-VERSION = 'v5'
+VERSION = 'v5-next'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
@@ -180,9 +180,13 @@ def query_string(win, prompt):
     curses.curs_set(True)
     win.refresh()
 
+    def textbox_input_validator(key):
+        if key in ['KEY_BACKSPACE', '\b', 127]:
+            return curses.KEY_BACKSPACE
+        return key
     editwin = curses.newwin(1, width - len(prompt), height - 1, len(prompt))
     box = Textbox(editwin)
-    box.edit()
+    box.edit(textbox_input_validator)
     out = box.gather()
 
     curses.curs_set(False)

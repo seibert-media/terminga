@@ -1,5 +1,4 @@
 -   Better text input.
-    -   Backspace does not work? (Only in VTE terminals?)
     -   Umlauts don't work.
     -   Either implement a custom textpad or switch to urwid.
 -   Show duration of current check status ("since when is it down?").
