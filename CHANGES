@@ -4,6 +4,9 @@ next
   [Fixed]
   - Backspace key now works in terminals other than XTerm, too.
 
+  [Changed]
+  - Config ~/.terminga is now a JSON file.
+
 v5  2019-11-26
   [Added]
   - "v" pops the left-most filter.

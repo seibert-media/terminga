@@ -6,6 +6,7 @@ import re
 
 from curses.textpad import Textbox
 from datetime import datetime, timedelta
+from json import loads
 from operator import itemgetter
 from os.path import expanduser
 from shlex import split
@@ -469,18 +470,15 @@ def interact(win, icinga, external_tool):
 
 if __name__ == '__main__':
     with open(expanduser('~/.terminga'), 'r') as fp:
-        lines = fp.read().splitlines()
+        config = loads(fp.read())
 
     icinga = Icinga()
     icinga.settings = {
-        'auth': (lines[1], lines[2]),
-        'base_url': lines[0],
+        'auth': (config['api_auth']['username'], config['api_auth']['password']),
+        'base_url': config['icinga_url'],
     }
 
-    if len(lines) >= 4:
-        external_tool = lines[3]
-    else:
-        external_tool = None
+    external_tool = config.get('external_tool')
 
     while True:
         try:

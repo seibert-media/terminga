@@ -30,12 +30,16 @@ course.
 Configuration
 -------------
 
-Create ~/.terminga, which consists of at least the first three lines:
+Create ~/.terminga, which consists of a JSON dict:
 
-    https://icinga-terminga-proxy.smedia.tools
-    myapiuser
-    myapiuserspassword
-    my-tool -h __HOST__ -s __SERVICE__ -o __OUTPUT__
+    {
+        "icinga_url": "https://icinga-terminga-proxy.smedia.tools",
+        "api_auth": {
+            "username": "myapiuser",
+            "password": "myapiuserspassword"
+        },
+        "external_tool": "mytool -h __HOST__ -s __SERVICE__ -o __OUTPUT__"
+    }
 
 Use a valid API user, not your regular Icinga user.
 
