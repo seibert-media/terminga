@@ -476,6 +476,7 @@ if __name__ == '__main__':
     icinga.settings = {
         'auth': (config['api_auth']['username'], config['api_auth']['password']),
         'base_url': config['icinga_url'],
+        'host_filter_params': config.get('host_filter_params', {}),
     }
 
     external_tool = config.get('external_tool')

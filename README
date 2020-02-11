@@ -38,15 +38,25 @@ Create ~/.terminga, which consists of a JSON dict:
             "username": "myapiuser",
             "password": "myapiuserspassword"
         },
-        "external_tool": "mytool -h __HOST__ -s __SERVICE__ -o __OUTPUT__"
+        "external_tool": "mytool -h __HOST__ -s __SERVICE__ -o __OUTPUT__",
+        "host_filter_params": {
+            "host_filter_custom_varname": "is_customer",
+            "host_filter_custom_varvalue": "false"
+        }
     }
 
 Use a valid API user, not your regular Icinga user.
 
-The last line contains a path to a user-supplied script and this line is
-optional. It will be invoked when you press "e" in terminga. The
+"external_tool" contains a path to a user-supplied script and this line
+is optional. It will be invoked when you press "e" in terminga. The
 placeholders will be replaced for each selected item. Note that
 __OUTPUT__ might resolve to an empty string.
+
+"host_filter_params" is optional, too. It *requires* you to use
+terminga-proxy (see below), because this is not a standard Icinga
+feature. You can use it to only show objects that match the given host
+filter. In the example above, all hosts must have a custom variable
+called "is_customer" and the value must be "false".
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:

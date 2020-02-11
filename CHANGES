@@ -7,6 +7,10 @@ next
   [Changed]
   - Config ~/.terminga is now a JSON file.
 
+  [Added]
+  - Display can be restricted to certain custom host variables (requires
+    usage of terminga-proxy).
+
 v5  2019-11-26
   [Added]
   - "v" pops the left-most filter.
