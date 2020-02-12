@@ -47,18 +47,35 @@ Create ~/.terminga, which consists of a JSON dict:
 
 Use a valid API user, not your regular Icinga user.
 
-"external_tool" contains a path to a user-supplied script and this line
-is optional. It will be invoked when you press "e" in terminga. The
-placeholders will be replaced for each selected item. Note that
+"external_tool" contains a path to a user-supplied script and this
+setting is optional. It will be invoked when you press "e" in terminga.
+The placeholders will be replaced for each selected item. Note that
 __OUTPUT__ might resolve to an empty string.
-
-"host_filter_params" is optional, too. It *requires* you to use
-terminga-proxy (see below), because this is not a standard Icinga
-feature. You can use it to only show objects that match the given host
-filter. In the example above, all hosts must have a custom variable
-called "is_customer" and the value must be "false".
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:
 
 https://bitbucket.apps.seibert-media.net/projects/SYS/repos/terminga-proxy
+
+"host_filter_params" is optional, too. The value of this subdict will be
+passed verbatim as a GET parameter to the Icinga API. It is meant to
+restrict the list of hosts. If you do NOT use terminga-proxy, you can
+use generic Icinga filters as explained in [0]:
+
+    "host_filter_params": {
+        "filter": "\"linux-servers\" in host.groups"
+    }
+
+[0]: https://icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#advanced-filters
+
+If you DO use terminga-proxy, those kinds of generic filters are NOT
+supported. terminga-proxy only supports the following:
+
+    "host_filter_params": {
+        "host_filter_custom_varname": "is_customer",
+        "host_filter_custom_varvalue": "false"
+    }
+
+With this config, all hosts must have a custom variable called
+"is_customer" and the value must be "false". Hosts that do not match
+this criterium, will not be visible in terminga.
