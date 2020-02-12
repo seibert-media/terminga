@@ -61,15 +61,20 @@ class Icinga(object):
         return self.settings['base_url'] + '/api/v1/' + endpoint
 
     def get_current_state(self):
+        if self.settings['use_host_filter_params']:
+            params = self.settings['host_filter_params']
+        else:
+            params = {}
+
         r = get(self._api('objects/hosts'),
                 auth=self.settings['auth'],
-                params=self.settings['host_filter_params'])
+                params=params)
         r.raise_for_status()
         hosts = r.json()
 
         r = get(self._api('objects/services'),
                 auth=self.settings['auth'],
-                params=self.settings['host_filter_params'])
+                params=params)
         r.raise_for_status()
         services = r.json()
 

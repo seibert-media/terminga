@@ -242,6 +242,7 @@ def show_help_screen(win):
     v        Pop left-most filter
     H        Add host name of currently selected item to filters
     S        Add service name of currently selected item to filters
+    C        Toggles usage of "host filter params"
 
     <Space>  Select / unselect current item
     a        Select all currently visible items
@@ -264,12 +265,18 @@ def show_help_screen(win):
         at_y += 1
 
 
-def standard_status(win, filters, only_broken, only_selected, refresh_delta, refresh_every):
+def standard_status(win, filters, only_broken, only_selected,
+                    use_host_filter_params, refresh_delta, refresh_every):
     height, width = win.getmaxyx()
 
     flt = f'Filter: {" > ".join(filters) if filters else "<none>"}'
 
-    indicators = f'[{"b" if only_broken else "-"}{"s" if only_selected else "-"}]'
+    indicators = '['
+    indicators += 'b' if only_broken else '-'
+    indicators += 's' if only_selected else '-'
+    indicators += 'C' if use_host_filter_params else '-'
+    indicators += ']'
+
     fraction = refresh_delta.total_seconds() / refresh_every.total_seconds()
     fraction = max(0, min(1, fraction))
     fill_len = 10
@@ -349,10 +356,9 @@ def interact(win, icinga, external_tool):
             show_help_screen(win)
             status(win, '')
         else:
-            status(win, standard_status(
-                win, filters, only_broken, only_selected,
-                refresh_delta, refresh_every,
-            ))
+            status(win, standard_status(win, filters, only_broken, only_selected,
+                                        icinga.settings['use_host_filter_params'],
+                                        refresh_delta, refresh_every))
             border_pane = list_items(win, offset, current, to_display, selected)
             height -= border_pane
 
@@ -379,6 +385,9 @@ def interact(win, icinga, external_tool):
         if char in ['b']:
             only_broken = not only_broken
             filter_dirty = True
+        if char in ['C']:
+            icinga.settings['use_host_filter_params'] = not icinga.settings['use_host_filter_params']
+            force_refresh = True
         if char in ['d', 'D']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
             comment = query_string(win, 'Comment: ')
@@ -481,6 +490,7 @@ if __name__ == '__main__':
         'auth': (config['api_auth']['username'], config['api_auth']['password']),
         'base_url': config['icinga_url'],
         'host_filter_params': config.get('host_filter_params', {}),
+        'use_host_filter_params': True,
     }
 
     external_tool = config.get('external_tool')
