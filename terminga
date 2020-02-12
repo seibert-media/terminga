@@ -123,6 +123,10 @@ def list_items(win, offset, current, icinga_items, selected):
         output_lines = []
         output_extra = 0
 
+    # Always allow room for showing three items.
+    output_lines_max_allowed = height - margin_top - margin_bottom - output_extra - 3
+    output_lines = output_lines[:output_lines_max_allowed]
+
     used_by_output_pane = len(output_lines) + output_extra
     usable_height_for_items = height - margin_top - margin_bottom - used_by_output_pane
     if usable_height_for_items <= 0:
