@@ -8,10 +8,12 @@ from curses.textpad import Textbox
 from datetime import datetime, timedelta
 from json import loads
 from operator import itemgetter
+from os import execv
 from os.path import expanduser
 from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
+from sys import argv
 from time import sleep
 from traceback import print_exc
 
@@ -505,13 +507,13 @@ if __name__ == '__main__':
 
     external_tool = config.get('external_tool')
 
-    while True:
-        try:
-            curses.wrapper(interact, icinga, external_tool)
-            exit(0)
-        except Exception:
-            print('It appears we had a whoopsie. Please report this.')
-            print()
-            print_exc()
-            print()
-            input('Press a key to reset and continue.')
+    try:
+        curses.wrapper(interact, icinga, external_tool)
+        exit(0)
+    except Exception:
+        print('It appears we had a whoopsie. Please report this.')
+        print()
+        print_exc()
+        print()
+        input('Press a key to reset and continue.')
+        execv(argv[0], argv)

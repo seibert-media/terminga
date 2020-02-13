@@ -8,6 +8,9 @@ next
 
   [Changed]
   - Config ~/.terminga is now a JSON file.
+  - On exceptions, terminga will now re-exec itself. This means that you
+    can now install a new version with bug fixes while terminga is
+    running.
 
   [Added]
   - Filter strings can now be passed to Icinga / terminga-proxy. Allows
