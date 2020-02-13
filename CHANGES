@@ -10,8 +10,8 @@ next
   - Config ~/.terminga is now a JSON file.
 
   [Added]
-  - Display can be restricted to certain custom host variables (requires
-    usage of terminga-proxy).
+  - Filter strings can now be passed to Icinga / terminga-proxy. Allows
+    you to work on only those systems that match certain criteria.
 
 v5  2019-11-26
   [Added]
