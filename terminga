@@ -266,7 +266,8 @@ def show_help_screen(win):
 
 
 def standard_status(win, filters, only_broken, only_selected,
-                    use_host_filter_params, refresh_delta, refresh_every):
+                    use_host_filter_params, refresh_delta, refresh_every,
+                    scroll_current, scroll_max):
     height, width = win.getmaxyx()
 
     flt = f'Filter: {" > ".join(filters) if filters else "<none>"}'
@@ -282,11 +283,19 @@ def standard_status(win, filters, only_broken, only_selected,
     fill_len = 10
     fill = int(fill_len * fraction)
     fill_pad = fill_len - fill
-    indicators = '[' + '#' * fill + '-' * fill_pad + ']' + indicators
+    refresh_bar = '[' + '#' * fill + '-' * fill_pad + ']'
+
+    if scroll_max > 0:
+        scroll_fraction = scroll_current / scroll_max
+    else:
+        scroll_fraction = 0
+    scroll_msg = '[{:3d}%]'.format(int(round(scroll_fraction * 100)))
+
+    right_msg = refresh_bar + indicators + scroll_msg
 
     msg = flt
-    msg += ' ' * max(0, width - len(flt) - len(indicators))
-    msg += indicators
+    msg += ' ' * max(0, width - len(flt) - len(right_msg))
+    msg += right_msg
 
     return msg
 
@@ -358,7 +367,8 @@ def interact(win, icinga, external_tool):
         else:
             status(win, standard_status(win, filters, only_broken, only_selected,
                                         icinga.settings['use_host_filter_params'],
-                                        refresh_delta, refresh_every))
+                                        refresh_delta, refresh_every,
+                                        current, len(to_display)))
             border_pane = list_items(win, offset, current, to_display, selected)
             height -= border_pane
 

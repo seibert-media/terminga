@@ -12,6 +12,7 @@ next
   [Added]
   - Filter strings can now be passed to Icinga / terminga-proxy. Allows
     you to work on only those systems that match certain criteria.
+  - A simple scroll indicator.
 
 v5  2019-11-26
   [Added]
