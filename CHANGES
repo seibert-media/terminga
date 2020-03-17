@@ -4,7 +4,7 @@ next
   [Fixed]
   - Backspace key now works in terminals other than XTerm, too.
   - Overly long check outputs can no longer use up the whole window
-    space.
+    space, nor do they overlap the currently selected item.
 
   [Changed]
   - Config ~/.terminga is now a JSON file.

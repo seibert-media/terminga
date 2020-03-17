@@ -134,6 +134,23 @@ def list_items(win, offset, current, icinga_items, selected):
     if usable_height_for_items <= 0:
         return 0
 
+    # Scroll the upper half of the window if currently selected item
+    # is not visible, because there are too many output_lines.
+    # (Remember that the interval [offset, offset + usable_height_for_items),
+    # an open interval on the right, is the set of valid indexes that we
+    # can display at the moment. We must satisfy:
+    #
+    #     offset <= current < offset + usable_height_for_items
+    #
+    # Hence, if current >= offset + usable_… or, written slightly different,
+    # current > offset + usable_… - 1, then we must scroll up. How do we
+    # scroll up? By increasing offset. To which value? The largest one
+    # possible. How do we find that? By solving current > offset + usable_… - 1
+    # for offset.)
+    # (This same logic is used in other places throughout the code.)
+    if current > offset + usable_height_for_items - 1:
+        offset = max(current - usable_height_for_items + 1, 0)
+
     max_host_len = 0
     for i in icinga_items:
         max_host_len = max(max_host_len, len(i.host_name))
