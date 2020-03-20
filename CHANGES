@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v6  2020-03-20
   [Fixed]
   - Backspace key now works in terminals other than XTerm, too.
   - Overly long check outputs can no longer use up the whole window
