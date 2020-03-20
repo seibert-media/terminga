@@ -8,12 +8,13 @@ from curses.textpad import Textbox
 from datetime import datetime, timedelta
 from json import loads
 from operator import itemgetter
-from os import execv
+from os import execv, fdopen
 from os.path import expanduser
 from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
 from sys import argv
+from tempfile import mkstemp
 from time import sleep
 from traceback import print_exc
 
@@ -227,20 +228,27 @@ def run_external_tool(items, external_tool):
 
     args = split(external_tool)
 
-    signal(SIGCHLD, SIG_IGN)
+    input_list = []
     for i in items:
-        args_now = []
-        for a in args:
-            if a == '__HOST__':
-                args_now.append(i.host_name)
-            elif a == '__SERVICE__':
-                args_now.append(i.service_name)
-            elif a == '__OUTPUT__':
-                args_now.append('\n'.join(i.output_lines))
-            else:
-                args_now.append(a)
+        input_list.append(i.host_name)
+        input_list.append(i.service_name)
+        input_list.append('\r'.join(i.output_lines))
 
-        Popen(args_now)
+    fd, path = mkstemp()
+    fp = fdopen(fd, 'w')
+    fp.write('\n'.join(input_list))
+    fp.write('\n')
+    fp.close()
+
+    args_now = []
+    for a in args:
+        if a == '__SELECTION__':
+            args_now.append(path)
+        else:
+            args_now.append(a)
+
+    signal(SIGCHLD, SIG_IGN)
+    Popen(args_now)
 
 
 def show_help_screen(win):

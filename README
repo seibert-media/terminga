@@ -38,7 +38,7 @@ Create ~/.terminga, which consists of a JSON dict:
             "username": "myapiuser",
             "password": "myapiuserspassword"
         },
-        "external_tool": "mytool -h __HOST__ -s __SERVICE__ -o __OUTPUT__",
+        "external_tool": "mytool -s __SELECTION__",
         "host_filter_params": {
             "host_filter_custom_varname": "is_customer",
             "host_filter_custom_varvalue": "false"
@@ -49,8 +49,12 @@ Use a valid API user, not your regular Icinga user.
 
 "external_tool" contains a path to a user-supplied script and this
 setting is optional. It will be invoked when you press "e" in terminga.
-The placeholders will be replaced for each selected item. Note that
-__OUTPUT__ might resolve to an empty string.
+"__SELECTION__" will be replaced by the path to a file that contains
+your selection: First line is host name, second line service name, third
+line check output (with lines separated by \r rather than \n). This
+repeats for each selected item, i.e. your script will only be called
+once, no matter how many items you selected. It is the responsibility of
+your script to remove this file after it has been read.
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:

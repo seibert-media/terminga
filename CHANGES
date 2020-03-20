@@ -1,5 +1,11 @@
 Release history for terminga
 
+next
+  [Changed]
+  - External tool: Interface has changed, see README. The tool will only
+    be called once now, no matter how many items are selected. This
+    allows you to work on multiple items at once.
+
 v6  2020-03-20
   [Fixed]
   - Backspace key now works in terminals other than XTerm, too.
