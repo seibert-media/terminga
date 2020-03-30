@@ -5,6 +5,8 @@ next
   - External tool: Interface has changed, see README. The tool will only
     be called once now, no matter how many items are selected. This
     allows you to work on multiple items at once.
+  - Color scheme: Bar uses "white on blue" now, because it appears to
+    be more compatible with different terminal color schemes.
 
 v6  2020-03-20
   [Fixed]

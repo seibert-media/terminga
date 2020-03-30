@@ -331,7 +331,7 @@ def interact(win, icinga, external_tool):
     curses.curs_set(False)
 
     curses.use_default_colors()
-    curses.init_pair(COLORS['bar'], curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    curses.init_pair(COLORS['bar'], curses.COLOR_WHITE, curses.COLOR_BLUE)
     curses.init_pair(COLORS['state_ok'], curses.COLOR_GREEN, -1)
     curses.init_pair(COLORS['state_warning'], curses.COLOR_YELLOW, -1)
     curses.init_pair(COLORS['state_critical'], curses.COLOR_RED, -1)
