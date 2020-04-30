@@ -43,6 +43,10 @@ Create ~/.terminga, which consists of a JSON dict:
             "host_filter_custom_varname": "is_customer",
             "host_filter_custom_varvalue": "false"
         }
+        "service_filter_params": {
+            "service_filter_custom_varname": "is_customer",
+            "service_filter_custom_varvalue": "false"
+        }
     }
 
 Use a valid API user, not your regular Icinga user.
@@ -83,3 +87,9 @@ supported. terminga-proxy only supports the following:
 With this config, all hosts must have a custom variable called
 "is_customer" and the value must be "false". Hosts that do not match
 this criterium, will not be visible in terminga.
+
+"service_filter_params" works exactly the same, but operates on
+services.
+
+If "filter params" are activated, both "host_filter_params" and
+"service_filter_params" are used. You cannot toggle them individually.
