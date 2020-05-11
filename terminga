@@ -15,6 +15,7 @@ from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen
 from sys import argv
 from tempfile import mkstemp
+from textwrap import wrap
 from time import sleep
 from traceback import print_exc
 
@@ -120,7 +121,16 @@ def list_items(win, offset, current, icinga_items, selected):
     margin_top = margin_bottom = 1
 
     try:
-        output_lines = icinga_items[current].output_lines
+        output_lines = []
+        for orig_line in icinga_items[current].output_lines:
+            wrapped_lines = wrap(
+                orig_line,
+                replace_whitespace=False,
+                width=width
+            )
+            for wrapped_line in wrapped_lines:
+                output_lines.append(wrapped_line)
+
         output_extra = 1
     except IndexError:
         output_lines = []

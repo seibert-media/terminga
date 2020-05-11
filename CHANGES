@@ -7,6 +7,8 @@ next
     allows you to work on multiple items at once.
   - Color scheme: Bar uses "white on blue" now, because it appears to
     be more compatible with different terminal color schemes.
+  - Icinga Output: Output now wraps into multiple lines instead of
+    overflowing into the void.
 
 v6  2020-03-20
   [Fixed]
