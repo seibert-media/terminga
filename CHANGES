@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v7  2020-05-15
   [Changed]
   - External tool: Interface has changed, see README. The tool will only
     be called once now, no matter how many items are selected. This
