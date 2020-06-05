@@ -234,6 +234,14 @@ def query_string(win, prompt):
     return out.strip()
 
 
+def red_body(win):
+    height, width = win.getmaxyx()
+    attrs = color_for_state(STATES['critical']) | curses.A_REVERSE
+
+    for at_y in range(1, height - 1):
+        addstr(win, at_y, 0, ' ' * width, attrs)
+
+
 def run_external_tool(items, external_tool):
     if not external_tool:
         return
@@ -408,6 +416,7 @@ def interact(win, icinga, external_tool):
             status(win, '')
         elif icinga_items is None:
             status(win, 'NO CONNECTION TO ICINGA')
+            red_body(win)
         else:
             status(win, standard_status(win, filters, only_broken, only_selected,
                                         icinga.settings['use_custom_filter_params'],
