@@ -21,8 +21,10 @@ from traceback import print_exc
 
 from icinga import Icinga
 
+from requests import ConnectionError, HTTPError
 
-VERSION = 'v7'
+
+VERSION = 'v7-next'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
@@ -375,14 +377,17 @@ def interact(win, icinga, external_tool):
             win.refresh()
 
             selected = set()
-            icinga_items = icinga.get_current_state()
+            try:
+                icinga_items = icinga.get_current_state()
+            except (ConnectionError, HTTPError):
+                icinga_items = None
             last_key = datetime.now()
             refresh_delta = timedelta(seconds=0)
             filter_dirty = True
             scroll_dirty = True
             force_refresh = False
 
-        if filter_dirty:
+        if filter_dirty and icinga_items is not None:
             if only_selected:
                 to_display = sorted(selected)
             else:
@@ -401,6 +406,8 @@ def interact(win, icinga, external_tool):
         if show_help:
             show_help_screen(win)
             status(win, '')
+        elif icinga_items is None:
+            status(win, 'NO CONNECTION TO ICINGA')
         else:
             status(win, standard_status(win, filters, only_broken, only_selected,
                                         icinga.settings['use_custom_filter_params'],

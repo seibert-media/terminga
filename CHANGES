@@ -1,5 +1,9 @@
 Release history for terminga
 
+next
+  [Changed]
+  - Gracefully handle network connection errors.
+
 v7  2020-05-15
   [Changed]
   - External tool: Interface has changed, see README. The tool will only
