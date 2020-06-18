@@ -12,6 +12,7 @@ class IcingaItem(object):
             self.type = 'Host'
             return
 
+        self.acknowledgement = int(json['attrs']['acknowledgement'])
         self.downtime_depth = int(json['attrs']['downtime_depth'])
         self.state = int(json['attrs']['state'])
         self.state_type = int(json['attrs']['state_type'])
@@ -51,6 +52,7 @@ class IcingaItem(object):
     def get_line_to_show(self, len_col1):
         prefixes = ''
         prefixes += 'S' if self.state_type == 0 else ' '
+        prefixes += 'A' if self.acknowledgement != 0 else ' '
         prefixes += 'D' if self.downtime_depth > 0 else ' '
         host_name = self.host_name + ' ' * (len_col1 - len(self.host_name))
         return f'{prefixes}  {host_name}  {self.service_name}'
