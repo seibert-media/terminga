@@ -283,6 +283,8 @@ def show_help_screen(win):
     r        Refresh
 
     b        Toggle "show only broken items"
+    a        Add ACK to current / selected items
+    A        Add ACK to current / selected host and all its services
     d        Put current / selected items in downtime
     D        Put current / selected host and all its services in downtime
     n        Check current / selected items NOW
@@ -296,7 +298,7 @@ def show_help_screen(win):
     C        Toggles usage of custom "filter params"
 
     <Space>  Select / unselect current item
-    a        Select all currently visible items
+    ^A       Select all currently visible items
     s        Toggle "show only selected items"
     c        Clear selection
 
@@ -455,6 +457,15 @@ def interact(win, icinga, external_tool):
         if char in ['C']:
             icinga.settings['use_custom_filter_params'] = not icinga.settings['use_custom_filter_params']
             force_refresh = True
+        if char in ['a', 'A']:
+            comment = query_string(win, 'Comment: ')
+            status(win, 'Setting acknowledgement ...')
+            win.refresh()
+            if char == 'a':
+                icinga.set_ack(items_for_action, comment)
+            else:
+                icinga.set_ack_for_host(items_for_action, icinga_items, comment)
+            force_refresh = True
         if char in ['d', 'D']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
             comment = query_string(win, 'Comment: ')
@@ -502,7 +513,7 @@ def interact(win, icinga, external_tool):
                 selected.add(to_display[current])
             current += 1
 
-        if char in ['a']:
+        if char in [chr(1), '^A']:
             selected = set(to_display)
         if char in ['c']:
             selected = set()
