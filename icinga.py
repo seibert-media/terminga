@@ -112,6 +112,50 @@ class Icinga(object):
         self._queue_check_typed(items, 'Host')
         self._queue_check_typed(items, 'Service')
 
+    def _set_ack_typed(self, items, comment, item_type):
+        items = [i for i in items if i.type == item_type]
+
+        chunk_size = 20
+        for c in range(0, len(items), chunk_size):
+            filters = []
+            for i in items[c:c + chunk_size]:
+                filters.append('(' + i.get_filter() + ')')
+
+            data = {
+                'author': getuser(),
+                'comment': comment,
+                'type': item_type,
+                'filter': ' || '.join(filters),
+            }
+
+            r = post(
+                self._api('actions/acknowledge-problem'),
+                auth=self.settings['auth'],
+                headers={'Accept': 'application/json'},
+                json=data,
+            )
+
+    def set_ack(self, items, comment):
+        if not comment:
+            return
+
+        self._set_ack_typed(items, comment, 'Host')
+        self._set_ack_typed(items, comment, 'Service')
+
+    def set_ack_for_host(self, items, all_items, comment):
+        if not comment:
+            return
+
+        items_for_action = set()
+
+        for i in all_items['hosts'] + all_items['services']:
+            for sel in items:
+                if i.host_name == sel.host_name:
+                    items_for_action.add(i)
+
+        self._set_ack_typed(items_for_action, comment, 'Host')
+        self._set_ack_typed(items_for_action, comment, 'Service')
+
     def _set_downtime_typed(self, items, comment, start_time, end_time, item_type):
         items = [i for i in items if i.type == item_type]
 
