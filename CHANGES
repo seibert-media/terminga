@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v8  2020-06-18
   [Changed]
   - Gracefully handle network connection errors.
 
