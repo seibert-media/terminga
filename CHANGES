@@ -1,5 +1,13 @@
 Release history for terminga
 
+next
+  [Changed]
+  - "a" and "A" add ACKs. Previously, "a" was "select all", this has
+    been changed to "^A".
+
+  [Added]
+  - ACKs are now shown. They count as "not broken".
+
 v8  2020-06-18
   [Changed]
   - Gracefully handle network connection errors.
