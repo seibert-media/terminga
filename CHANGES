@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v9  2020-08-14
   [Changed]
   - "a" and "A" add ACKs. Previously, "a" was "select all", this has
     been changed to "^A".
