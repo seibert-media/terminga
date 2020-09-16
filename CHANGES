@@ -1,5 +1,11 @@
 Release history for terminga
 
+next
+  [Added]
+  - On empty search results or if there are simply no incidents to show,
+    we now display an "everything is fine" string, instead of just
+    showing a blank window.
+
 v9  2020-08-14
   [Changed]
   - "a" and "A" add ACKs. Previously, "a" was "select all", this has
