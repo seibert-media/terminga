@@ -1,6 +1,11 @@
 Release history for terminga
 
 next
+  [Changed]
+  - Items that have been ACKed are no longer hidden (like items in a
+    downtime are). The idea is that these are unplanned incidents, which
+    should be fixed -- and you should be aware of those incidents.
+
   [Added]
   - On empty search results or if there are simply no incidents to show,
     we now display an "everything is fine" string, instead of just

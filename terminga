@@ -86,8 +86,6 @@ def filter_items(icinga_items, only_broken, filters):
         if host.downtime_depth > 0:
             hosts_downtime.add(host.host_name)
         if only_broken:
-            if host.acknowledgement != 0:
-                continue
             if host.host_name in hosts_downtime:
                 continue
             if host.state == STATES['ok'] or host.state_type == 0:
@@ -97,8 +95,6 @@ def filter_items(icinga_items, only_broken, filters):
 
     for service in services:
         if only_broken:
-            if service.acknowledgement != 0:
-                continue
             if service.downtime_depth > 0:
                 continue
             if service.host_name in hosts_downtime:
