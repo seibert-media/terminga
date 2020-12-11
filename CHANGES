@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v10  2020-12-11
   [Changed]
   - Items that have been ACKed are no longer hidden (like items in a
     downtime are). The idea is that these are unplanned incidents, which
