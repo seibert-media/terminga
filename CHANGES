@@ -1,5 +1,12 @@
 Release history for terminga
 
+next
+  [Changed]
+  - Filters have been reworked. It is no longer possible to search for
+    custom variables. Instead, you should define host and service groups
+    within Icinga -- support for filtering for those groups has been
+    added.
+
 v10  2020-12-11
   [Changed]
   - Items that have been ACKed are no longer hidden (like items in a
