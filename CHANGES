@@ -1,6 +1,10 @@
 Release history for terminga
 
 next
+  [Fixed]
+  - There's no longer a useless empty line above the bottom status bar
+    if plugin output is empty.
+
   [Changed]
   - Filters have been reworked. It is no longer possible to search for
     custom variables. Instead, you should define host and service groups

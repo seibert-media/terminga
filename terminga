@@ -132,11 +132,12 @@ def list_items(win, offset, current, icinga_items, selected):
             )
             for wrapped_line in wrapped_lines:
                 output_lines.append(wrapped_line)
-
-        output_extra = 1
     except IndexError:
         output_lines = []
-        output_extra = 0
+
+    output_extra = 0
+    if len(output_lines) > 0:
+        output_extra = 1
 
     # Always allow room for showing three items.
     output_lines_max_allowed = height - margin_top - margin_bottom - output_extra - 3
