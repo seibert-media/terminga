@@ -4,7 +4,7 @@
   | ||  __/ |  | | | | | | | | | | (_| | (_| |
    \__\___|_|  |_| |_| |_|_|_| |_|\__, |\__,_|
                                   |___/
-  https://bitbucket.apps.seibert-media.net/projects/SYS/repos/terminga
+  https://github.com/seibert-media/terminga
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,7 +16,7 @@ A TUI for Icinga2.
 Dependencies
 ------------
 
-    - Python 3.7
+    - Python 3.7+
     - python-requests
 
 
@@ -33,7 +33,7 @@ Configuration
 Create ~/.terminga, which consists of a JSON dict:
 
     {
-        "icinga_url": "https://icinga-terminga-proxy.smedia.tools",
+        "icinga_url": "https://icinga-terminga-proxy.your-company.com",
         "api_auth": {
             "username": "myapiuser",
             "password": "myapiuserspassword"
@@ -59,7 +59,7 @@ your script to remove this file after it has been read.
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:
 
-https://bitbucket.apps.seibert-media.net/projects/SYS/repos/terminga-proxy
+https://github.com/seibert-media/terminga-proxy
 
 "group_filters" is optional, too. It can be used to view only those host
 and service objects that belong to certain groups (must be configured
