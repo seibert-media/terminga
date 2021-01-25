@@ -24,7 +24,7 @@ from icinga import Icinga
 from requests import ConnectionError, HTTPError
 
 
-VERSION = 'v10-next'
+VERSION = 'v11'
 HELP = f'terminga {VERSION} | q: Quit | ?: Help'
 
 COLORS = {
