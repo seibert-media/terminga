@@ -12,7 +12,7 @@ from os import execv, fdopen
 from os.path import expanduser
 from shlex import split
 from signal import signal, SIGCHLD, SIG_IGN
-from subprocess import Popen
+from subprocess import Popen, check_output
 from sys import argv
 from tempfile import mkstemp
 from textwrap import wrap
@@ -560,13 +560,27 @@ def interact(win, icinga, external_tool):
                 last_key = datetime.now()
 
 
+def get_auth_from_config(config):
+    if 'password' in config['api_auth']:
+        password = config['api_auth']['password']
+    elif 'pass_command' in config['api_auth']:
+        password = check_output(
+            config['api_auth']['pass_command'],
+            shell=True,
+        ).decode('UTF-8').splitlines()[0].strip()
+    else:
+        raise Exception('Your config needs either "password" or "pass_command"')
+
+    return config['api_auth']['username'], password
+
+
 if __name__ == '__main__':
     with open(expanduser('~/.terminga'), 'r') as fp:
         config = loads(fp.read())
 
     icinga = Icinga()
     icinga.settings = {
-        'auth': (config['api_auth']['username'], config['api_auth']['password']),
+        'auth': get_auth_from_config(config),
         'base_url': config['icinga_url'],
         'use_group_filters': True,
         'group_filters': config.get('group_filters', {}),

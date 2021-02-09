@@ -1,5 +1,10 @@
 Release history for terminga
 
+next
+  [Added]
+  - "pass_command" can be used in your config instead of a plain text
+    "password".
+
 v11  2021-01-25
   [Fixed]
   - There's no longer a useless empty line above the bottom status bar
