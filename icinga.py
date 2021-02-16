@@ -2,7 +2,9 @@ from datetime import datetime
 from getpass import getuser
 
 from requests import get, post
+import urllib3
 
+urllib3.disable_warnings()
 
 class IcingaItem(object):
     def __init__(self, json, only_host_name=None):
@@ -72,15 +74,21 @@ class Icinga(object):
             if self.settings['group_filters'].get('servicegroup'):
                 service_params = {'servicegroup': self.settings['group_filters']['servicegroup']}
 
-        r = get(self._api('objects/hosts'),
-                auth=self.settings['auth'],
-                params=host_params)
+        r = get(
+            self._api('objects/hosts'),
+            auth=self.settings['auth'],
+            params=host_params,
+            verify=self.settings['ssl_verify'],
+        )
         r.raise_for_status()
         hosts = r.json()
 
-        r = get(self._api('objects/services'),
-                auth=self.settings['auth'],
-                params=service_params)
+        r = get(
+            self._api('objects/services'),
+            auth=self.settings['auth'],
+            params=service_params,
+            verify=self.settings['ssl_verify'],
+        )
         r.raise_for_status()
         services = r.json()
 
@@ -108,6 +116,7 @@ class Icinga(object):
                 auth=self.settings['auth'],
                 headers={'Accept': 'application/json'},
                 json=data,
+                verify=self.settings['ssl_verify'],
             )
 
     def queue_check(self, items):
@@ -135,6 +144,7 @@ class Icinga(object):
                 auth=self.settings['auth'],
                 headers={'Accept': 'application/json'},
                 json=data,
+                verify=self.settings['ssl_verify'],
             )
 
     def set_ack(self, items, comment):
@@ -182,6 +192,7 @@ class Icinga(object):
                 auth=self.settings['auth'],
                 headers={'Accept': 'application/json'},
                 json=data,
+                verify=self.settings['ssl_verify'],
             )
 
     def set_downtime(self, items, comment, duration):
