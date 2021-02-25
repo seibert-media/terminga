@@ -27,7 +27,11 @@ class IcingaItem(object):
             self.host_name = json['attrs']['display_name']
             self.service_name = '-- HOST --'
 
-        self.output_lines = json['attrs'].get('last_check_result', {}).get('output', '').splitlines()
+        lcr = json['attrs'].get('last_check_result', {})
+        if lcr is not None:
+            self.output_lines = lcr.get('output', '').splitlines()
+        else:
+            self.output_lines = []
 
     def __lt__(self, other):
         if self.state == other.state:
