@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v12  2021-02-25
   [Added]
   - "pass_command" can be used in your config instead of a plain text
     "password".
