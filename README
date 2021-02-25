@@ -66,5 +66,4 @@ https://github.com/seibert-media/terminga-proxy
 
 "group_filters" is optional, too. It can be used to view only those host
 and service objects that belong to certain groups (must be configured
-within Icinga). "group_filters" is ONLY supported if you are using
-terminga-proxy.
+within Icinga).

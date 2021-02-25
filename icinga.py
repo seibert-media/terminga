@@ -2,6 +2,7 @@ from datetime import datetime
 from getpass import getuser
 
 from requests import get, post
+from urllib.parse import quote_plus
 
 
 class IcingaItem(object):
@@ -70,11 +71,21 @@ class Icinga(object):
         host_params = {}
         service_params = {}
 
+        # Filtering for groups has to be done differently depending on
+        # whether you use terminga-proxy or not. In plain Icinga, you
+        # need to use a full-blown filter query ("filter=..."). Filter
+        # queries are not implemented in terminga-proxy at all. Instead,
+        # we pass "hostgroup=..." directly (which is ignored by plain
+        # Icinga).
         if self.settings['use_group_filters']:
             if self.settings['group_filters'].get('hostgroup'):
-                host_params = {'hostgroup': self.settings['group_filters']['hostgroup']}
+                hg = quote_plus(self.settings['group_filters']['hostgroup'])
+                host_params = f'filter="{hg}"%20in%20host.groups'
+                host_params += f'&hostgroup={hg}'
             if self.settings['group_filters'].get('servicegroup'):
-                service_params = {'servicegroup': self.settings['group_filters']['servicegroup']}
+                sg = quote_plus(self.settings['group_filters']['servicegroup'])
+                service_params = f'filter="{sg}"%20in%20service.groups'
+                service_params += f'&servicegroup={sg}'
 
         r = get(self._api('objects/hosts'),
                 auth=self.settings['auth'],
