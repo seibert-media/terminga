@@ -343,7 +343,10 @@ def standard_status(win, filters, only_broken, only_selected,
         scroll_fraction = scroll_current / scroll_max
     else:
         scroll_fraction = 0
-    scroll_msg = '[{:3d}%]'.format(int(round(scroll_fraction * 100)))
+    scroll_msg = '[{:3d}%][{}]'.format(
+        int(round(scroll_fraction * 100)),
+        scroll_max,
+    )
 
     right_msg = refresh_bar + indicators + scroll_msg
 

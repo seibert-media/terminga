@@ -8,6 +8,7 @@ next
   [Added]
   - Filtering via "group_filters" now also works if you're not using
     terminga-proxy.
+  - The status bar shows the number of currently visible items.
 
 v12  2021-02-25
   [Added]
