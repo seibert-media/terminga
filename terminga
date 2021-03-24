@@ -373,6 +373,7 @@ def interact(win, icinga, external_tool):
     force_refresh = False
     icinga_items = None
     only_broken = True
+    scroll_dirty = True
     selected = set()
     only_selected = False
     show_help = False
@@ -401,6 +402,7 @@ def interact(win, icinga, external_tool):
             last_key = datetime.now()
             refresh_delta = timedelta(seconds=0)
             filter_dirty = True
+            scroll_dirty = True
             force_refresh = False
 
         if filter_dirty and icinga_items is not None:
@@ -408,7 +410,13 @@ def interact(win, icinga, external_tool):
                 to_display = sorted(selected)
             else:
                 to_display = sorted(filter_items(icinga_items, only_broken, filters))
+            scroll_dirty = True
             filter_dirty = False
+
+        if scroll_dirty:
+            current = 0
+            offset = 0
+            scroll_dirty = False
 
         win.erase()
         title(win, HELP)
