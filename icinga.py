@@ -143,6 +143,10 @@ class Icinga(object):
                 'comment': comment,
                 'type': item_type,
                 'filter': ' || '.join(filters),
+
+                # "Whether the acknowledgement will be set until the
+                # service or host fully recovers. Defaults to false."
+                'sticky': True,
             }
 
             r = post(
