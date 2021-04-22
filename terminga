@@ -587,6 +587,7 @@ if __name__ == '__main__':
         'base_url': config['icinga_url'],
         'use_group_filters': True,
         'group_filters': config.get('group_filters', {}),
+        'ssl_verify': config.get('ssl_verify', True),
     }
 
     external_tool = config.get('external_tool')
