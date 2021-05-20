@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v13  2021-05-20
   [Fixed]
   - Fixed crash when displaying checks that never ran (still "pending"),
     if terminga proxy is not used.
