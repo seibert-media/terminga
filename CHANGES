@@ -1,5 +1,10 @@
 Release history for terminga
 
+next
+  [Added]
+  - Filters can be negative: "!foo" matches all items that do not
+    contain "foo".
+
 v13  2021-05-20
   [Fixed]
   - Fixed crash when displaying checks that never ran (still "pending"),

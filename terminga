@@ -107,11 +107,22 @@ def filter_items(icinga_items, only_broken, filters):
     mut_filters = filters[:]
     while mut_filters:
         f = mut_filters.pop(0)
+
+        if f.startswith('!'):
+            positive = False
+            f = f[1:]
+        else:
+            positive = True
+
         match_re_comp = re.compile(f, re.I)
 
         new_buffered = []
         for item in buffered:
-            if match_re_comp.search(item.get_line_to_show(0)):
+            search_result = match_re_comp.search(item.get_line_to_show(0))
+            if (
+                (positive and search_result) or
+                (not positive and not search_result)
+            ):
                 new_buffered.append(item)
         buffered = new_buffered
 
@@ -291,7 +302,7 @@ def show_help_screen(win):
     n        Check current / selected items NOW
     e        Launch external tool on current item
 
-    f        Add filter regex
+    f        Add filter regex (start with "!" for negative filter)
     F        Pop right-most filter
     v        Pop left-most filter
     H        Add host name of currently selected item to filters
