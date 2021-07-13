@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v14  2021-07-13
   [Added]
   - Filters can be negative: "!foo" matches all items that do not
     contain "foo".
