@@ -459,21 +459,19 @@ def interact(win, icinga, external_tool):
                 current = 0
                 current_item = None
 
-            current, new_current_item = determine_current(
+            current, current_item = determine_current(
                 current,
                 current_item,
                 to_display,
             )
-            if new_current_item != current_item:
-                offset = scroll_if_needed(
-                    current,
-                    force_jump_to_top,
-                    height,
-                    bottompad,
-                    starty,
-                    len(to_display),
-                )
-            current_item = new_current_item
+            offset = scroll_if_needed(
+                current,
+                force_jump_to_top,
+                height,
+                bottompad,
+                starty,
+                len(to_display),
+            )
             scroll_dirty = False
             force_jump_to_top = False
 
