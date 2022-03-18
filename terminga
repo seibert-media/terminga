@@ -415,6 +415,7 @@ def interact(win, icinga, external_tool):
     selected = set()
     only_selected = False
     show_help = False
+    force_jump_to_top = False
 
     refresh_every = timedelta(seconds=30)
     refresh_delta = timedelta(seconds=0)
@@ -454,6 +455,10 @@ def interact(win, icinga, external_tool):
             filter_dirty = False
 
         if scroll_dirty:
+            if force_jump_to_top:
+                current = 0
+                current_item = None
+
             current, new_current_item = determine_current(
                 current,
                 current_item,
@@ -462,7 +467,7 @@ def interact(win, icinga, external_tool):
             if new_current_item != current_item:
                 offset = scroll_if_needed(
                     current,
-                    offset,
+                    force_jump_to_top,
                     height,
                     bottompad,
                     starty,
@@ -470,6 +475,7 @@ def interact(win, icinga, external_tool):
                 )
             current_item = new_current_item
             scroll_dirty = False
+            force_jump_to_top = False
 
         win.erase()
         title(win, HELP)
@@ -615,6 +621,7 @@ def interact(win, icinga, external_tool):
             refresh_delta = datetime.now() - last_key
             if refresh_delta > refresh_every:
                 force_refresh = True
+                force_jump_to_top = True
                 last_key = datetime.now()
 
 
