@@ -368,6 +368,33 @@ def standard_status(win, filters, only_broken, only_selected,
     return msg
 
 
+def scroll_if_needed(current, offset, height, bottompad, starty, len_to_display):
+    if current - offset >= (height - bottompad) - starty:
+        offset = current - (height - bottompad) + starty + 1
+    if current - offset <= -1:
+        offset = current
+
+    if offset < 0:
+        offset = 0
+    if offset >= len_to_display:
+        offset = len_to_display - 1
+
+    return offset
+
+
+def determine_current(current, current_item, items):
+    if current_item is not None and current_item in items:
+        return items.index(current_item), current_item
+    else:
+        if len(items) > 0:
+            # Try to use the item above the current one.
+            index = max(current - 1, 0)
+            index = min(index, len(items) - 1)
+            return index, items[index]
+        else:
+            return 0, None
+
+
 def interact(win, icinga, external_tool):
     curses.curs_set(False)
 
@@ -393,7 +420,9 @@ def interact(win, icinga, external_tool):
     refresh_delta = timedelta(seconds=0)
 
     current = 0
+    current_item = None
     offset = 0
+    bottompad = starty = 1
 
     title(win, HELP)
     status(win, '')
@@ -425,8 +454,21 @@ def interact(win, icinga, external_tool):
             filter_dirty = False
 
         if scroll_dirty:
-            current = 0
-            offset = 0
+            current, new_current_item = determine_current(
+                current,
+                current_item,
+                to_display,
+            )
+            if new_current_item != current_item:
+                offset = scroll_if_needed(
+                    current,
+                    offset,
+                    height,
+                    bottompad,
+                    starty,
+                    len(to_display),
+                )
+            current_item = new_current_item
             scroll_dirty = False
 
         win.erase()
@@ -537,8 +579,6 @@ def interact(win, icinga, external_tool):
             filter_dirty = True
 
         # Scrolling.
-        bottompad = starty = 1
-
         if char in ['j', 'KEY_DOWN']: current += 1
         if char in ['k', 'KEY_UP']: current -= 1
 
@@ -553,16 +593,20 @@ def interact(win, icinga, external_tool):
         if current >= len(to_display):
             current = len(to_display) - 1
 
-        # Scroll up or down if needed.
-        if current - offset >= (height - bottompad) - starty:
-            offset = current - (height - bottompad) + starty + 1
-        if current - offset <= -1:
-            offset = current
+        if len(to_display) > 0:
+            if current < len(to_display):
+                current_item = to_display[current]
+        else:
+            current_item = None
 
-        if offset < 0:
-            offset = 0
-        if offset >= len(to_display):
-            offset = len(to_display) - 1
+        offset = scroll_if_needed(
+            current,
+            offset,
+            height,
+            bottompad,
+            starty,
+            len(to_display),
+        )
 
         if char is not None:
             last_key = datetime.now()
