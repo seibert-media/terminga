@@ -14,6 +14,11 @@ class IcingaItem(object):
             self.host_name = only_host_name
             self.service_name = '-- HOST --'
             self.type = 'Host'
+            self.acknowledgement = 0
+            self.downtime_depth = 0
+            self.output_lines = []
+            self.state = 0
+            self.state_type = 0
             return
 
         self.acknowledgement = int(json['attrs']['acknowledgement'])
