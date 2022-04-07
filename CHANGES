@@ -6,6 +6,10 @@ next
     item on changes, we try to find the previously selected item or an
     item close to it.
 
+  [Added]
+  - The config option "hide_ack_from_broken" has been added. This can
+    restore pre-v10 behavior, if desired.
+
 v14  2021-07-13
   [Added]
   - Filters can be negative: "!foo" matches all items that do not

@@ -43,7 +43,8 @@ Create ~/.terminga, which consists of a JSON dict:
         "group_filters": {
             "hostgroup": "is_customer-no",
             "servicegroup": "is_customer-no"
-        }
+        },
+        "hide_ack_from_broken": true
     }
 
 Use a valid API user, not your regular Icinga user.
@@ -73,3 +74,7 @@ https://github.com/seibert-media/terminga-proxy
 "group_filters" is optional, too. It can be used to view only those host
 and service objects that belong to certain groups (must be configured
 within Icinga).
+
+"hide_ack_from_broken" is an optional setting. If set to "true",
+acknowledged problems will not be shown if the "only show broken" filter
+is enabled (it can be toggled by pressing "b").
