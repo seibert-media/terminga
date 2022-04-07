@@ -5,6 +5,8 @@ next
   - More stable scrolling: Instead of jumping back to the very first
     item on changes, we try to find the previously selected item or an
     item close to it.
+  - The filter "show only selected items" has been removed. Nobody used
+    this.
 
   [Added]
   - The config option "hide_ack_from_broken" has been added. This can

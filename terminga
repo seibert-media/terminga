@@ -315,7 +315,6 @@ def show_help_screen(win):
 
     <Space>  Select / unselect current item
     ^A       Select all currently visible items
-    s        Toggle "show only selected items"
     c        Clear selection
 
     j, k     Scroll one line down / up
@@ -334,16 +333,15 @@ def show_help_screen(win):
         at_y += 1
 
 
-def standard_status(win, filters, only_broken, only_selected,
-                    use_group_filters, refresh_delta, refresh_every,
-                    scroll_current, scroll_max):
+def standard_status(win, filters, only_broken, use_group_filters,
+                    refresh_delta, refresh_every, scroll_current,
+                    scroll_max):
     height, width = win.getmaxyx()
 
     flt = f'Filter: {" > ".join(filters) if filters else "<none>"}'
 
     indicators = '['
     indicators += 'b' if only_broken else '-'
-    indicators += 's' if only_selected else '-'
     indicators += 'C' if use_group_filters else '-'
     indicators += ']'
 
@@ -417,7 +415,6 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
     only_broken = True
     scroll_dirty = True
     selected = set()
-    only_selected = False
     show_help = False
     force_jump_to_top = False
 
@@ -451,15 +448,12 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
             force_refresh = False
 
         if filter_dirty and icinga_items is not None:
-            if only_selected:
-                to_display = sorted(selected)
-            else:
-                to_display = sorted(filter_items(
-                    icinga_items,
-                    only_broken,
-                    hide_ack_from_broken,
-                    filters,
-                ))
+            to_display = sorted(filter_items(
+                icinga_items,
+                only_broken,
+                hide_ack_from_broken,
+                filters,
+            ))
             scroll_dirty = True
             filter_dirty = False
 
@@ -494,7 +488,7 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
             status(win, 'NO CONNECTION TO ICINGA')
             red_body(win)
         else:
-            status(win, standard_status(win, filters, only_broken, only_selected,
+            status(win, standard_status(win, filters, only_broken,
                                         icinga.settings['use_group_filters'],
                                         refresh_delta, refresh_every,
                                         current, len(to_display)))
@@ -587,9 +581,6 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
             selected = set(to_display)
         if char in ['c']:
             selected = set()
-        if char in ['s']:
-            only_selected = not only_selected
-            filter_dirty = True
 
         # Scrolling.
         if char in ['j', 'KEY_DOWN']: current += 1
