@@ -14,6 +14,11 @@ class IcingaItem(object):
             self.host_name = only_host_name
             self.service_name = '-- HOST --'
             self.type = 'Host'
+            self.acknowledgement = 0
+            self.downtime_depth = 0
+            self.output_lines = []
+            self.state = 0
+            self.state_type = 0
             return
 
         self.acknowledgement = int(json['attrs']['acknowledgement'])
@@ -36,6 +41,33 @@ class IcingaItem(object):
             self.output_lines = lcr.get('output', '').splitlines()
         else:
             self.output_lines = []
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, IcingaItem) and
+            self.acknowledgement == other.acknowledgement and
+            self.downtime_depth == other.downtime_depth and
+            self.host_name == other.host_name and
+            self.output_lines == other.output_lines and
+            self.service_name == other.service_name and
+            self.state == other.state and
+            self.state_type == other.state_type and
+            self.type == other.type
+        )
+
+    def __hash__(self):
+        return hash(
+            (
+                self.acknowledgement,
+                self.downtime_depth,
+                self.host_name,
+                tuple(self.output_lines),
+                self.service_name,
+                self.state,
+                self.state_type,
+                self.type,
+            )
+        )
 
     def __lt__(self, other):
         if self.state == other.state:
