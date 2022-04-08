@@ -44,7 +44,8 @@ Create ~/.terminga, which consists of a JSON dict:
             "hostgroup": "is_customer-no",
             "servicegroup": "is_customer-no"
         },
-        "hide_ack_from_broken": true
+        "hide_ack_from_broken": true,
+        "jump_to_first_unhandled": true
     }
 
 Use a valid API user, not your regular Icinga user.
@@ -78,3 +79,8 @@ within Icinga).
 "hide_ack_from_broken" is an optional setting. If set to "true",
 acknowledged problems will not be shown if the "only show broken" filter
 is enabled (it can be toggled by pressing "b").
+
+"jump_to_first_unhandled" is an optional setting. If set to "true", then
+the cursor will jump to the first non-ACKed item on screen refreshes. It
+probably only makes sense to use this together with
+"hide_ack_from_broken" set to "false".

@@ -11,6 +11,7 @@ next
   [Added]
   - The config option "hide_ack_from_broken" has been added. This can
     restore pre-v10 behavior, if desired.
+  - The config option "jump_to_first_unhandled" has been added.
 
 v14  2021-07-13
   [Added]

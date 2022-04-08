@@ -397,7 +397,13 @@ def determine_current(current, current_item, items):
             return 0, None
 
 
-def interact(win, icinga, external_tool, hide_ack_from_broken):
+def interact(
+    win,
+    icinga,
+    external_tool,
+    hide_ack_from_broken,
+    jump_to_first_unhandled,
+):
     curses.curs_set(False)
 
     curses.use_default_colors()
@@ -458,15 +464,22 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
             filter_dirty = False
 
         if scroll_dirty:
-            if force_jump_to_top:
+            if jump_to_first_unhandled:
+                for i, item in enumerate(to_display):
+                    if item.acknowledgement + item.downtime_depth == 0:
+                        current = i
+                        current_item = item
+                        break
+            elif force_jump_to_top:
                 current = 0
                 current_item = None
 
-            current, current_item = determine_current(
-                current,
-                current_item,
-                to_display,
-            )
+                current, current_item = determine_current(
+                    current,
+                    current_item,
+                    to_display,
+                )
+
             offset = scroll_if_needed(
                 current,
                 force_jump_to_top,
@@ -475,6 +488,7 @@ def interact(win, icinga, external_tool, hide_ack_from_broken):
                 starty,
                 len(to_display),
             )
+
             scroll_dirty = False
             force_jump_to_top = False
 
@@ -652,9 +666,16 @@ if __name__ == '__main__':
 
     external_tool = config.get('external_tool')
     hide_ack_from_broken = config.get('hide_ack_from_broken', False)
+    jump_to_first_unhandled = config.get('jump_to_first_unhandled', False)
 
     try:
-        curses.wrapper(interact, icinga, external_tool, hide_ack_from_broken)
+        curses.wrapper(
+            interact,
+            icinga,
+            external_tool,
+            hide_ack_from_broken,
+            jump_to_first_unhandled,
+        )
         exit(0)
     except Exception:
         print('It appears we had a whoopsie. Please report this.')
