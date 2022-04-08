@@ -333,9 +333,16 @@ def show_help_screen(win):
         at_y += 1
 
 
-def standard_status(win, filters, only_broken, use_group_filters,
-                    refresh_delta, refresh_every, scroll_current,
-                    scroll_max):
+def standard_status(
+    win,
+    filters,
+    only_broken,
+    use_group_filters,
+    refresh_delta,
+    refresh_every,
+    scroll_current,
+    scroll_max,
+):
     height, width = win.getmaxyx()
 
     flt = f'Filter: {" > ".join(filters) if filters else "<none>"}'
@@ -502,10 +509,19 @@ def interact(
             status(win, 'NO CONNECTION TO ICINGA')
             red_body(win)
         else:
-            status(win, standard_status(win, filters, only_broken,
-                                        icinga.settings['use_group_filters'],
-                                        refresh_delta, refresh_every,
-                                        current, len(to_display)))
+            status(
+                win,
+                standard_status(
+                    win,
+                    filters,
+                    only_broken,
+                    icinga.settings['use_group_filters'],
+                    refresh_delta,
+                    refresh_every,
+                    current,
+                    len(to_display),
+                ),
+            )
             border_pane = list_items(win, offset, current, to_display, selected)
             height -= border_pane
 
