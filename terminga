@@ -377,7 +377,10 @@ def standard_status(
     return msg
 
 
-def scroll_if_needed(current, offset, height, bottompad, starty, len_to_display):
+def scroll_if_needed(current, force_jump_to_top, offset, height, bottompad, starty, len_to_display):
+    if force_jump_to_top or len_to_display < height:
+        return 0
+
     if current - offset >= (height - bottompad) - starty:
         offset = current - (height - bottompad) + starty + 1
     if current - offset <= -1:
@@ -490,6 +493,7 @@ def interact(
             offset = scroll_if_needed(
                 current,
                 force_jump_to_top,
+                offset,
                 height,
                 bottompad,
                 starty,
@@ -635,6 +639,7 @@ def interact(
 
         offset = scroll_if_needed(
             current,
+            force_jump_to_top,
             offset,
             height,
             bottompad,
