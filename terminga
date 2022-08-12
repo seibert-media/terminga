@@ -490,6 +490,17 @@ def interact(
                     to_display,
                 )
 
+            if current < 0:
+                current = 0
+            if current >= len(to_display):
+                current = len(to_display) - 1
+
+            if len(to_display) > 0:
+                if current < len(to_display):
+                    current_item = to_display[current]
+            else:
+                current_item = None
+
             offset = scroll_if_needed(
                 current,
                 force_jump_to_top,
@@ -610,6 +621,7 @@ def interact(
             except KeyError:
                 selected.add(to_display[current])
             current += 1
+            scroll_dirty = True
 
         if char in [chr(1), '^A']:
             selected = set(to_display)
@@ -617,35 +629,26 @@ def interact(
             selected = set()
 
         # Scrolling.
-        if char in ['j', 'KEY_DOWN']: current += 1
-        if char in ['k', 'KEY_UP']: current -= 1
+        if char in ['j', 'KEY_DOWN']:
+            current += 1
+            scroll_dirty = True
+        if char in ['k', 'KEY_UP']:
+            current -= 1
+            scroll_dirty = True
 
-        if char in ['g', 'KEY_HOME']: current = 0
-        if char in ['G', 'KEY_END']: current = len(to_display) - 1
-
-        if char in [chr(6), '^F', 'KEY_NPAGE']: current += int(0.5 * (height - starty))
-        if char in [chr(2), '^B', 'KEY_PPAGE']: current -= int(0.5 * (height - starty))
-
-        if current < 0:
+        if char in ['g', 'KEY_HOME']:
             current = 0
-        if current >= len(to_display):
+            scroll_dirty = True
+        if char in ['G', 'KEY_END']:
             current = len(to_display) - 1
+            scroll_dirty = True
 
-        if len(to_display) > 0:
-            if current < len(to_display):
-                current_item = to_display[current]
-        else:
-            current_item = None
-
-        offset = scroll_if_needed(
-            current,
-            force_jump_to_top,
-            offset,
-            height,
-            bottompad,
-            starty,
-            len(to_display),
-        )
+        if char in [chr(6), '^F', 'KEY_NPAGE']:
+            current += int(0.5 * (height - starty))
+            scroll_dirty = True
+        if char in [chr(2), '^B', 'KEY_PPAGE']:
+            current -= int(0.5 * (height - starty))
+            scroll_dirty = True
 
         if char is not None:
             last_key = datetime.now()
