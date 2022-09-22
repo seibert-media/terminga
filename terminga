@@ -577,7 +577,10 @@ def interact(
             force_refresh = True
         if char in ['d', 'D']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
-            comment = query_string(win, 'Comment: ')
+            if ' ' in duration:
+                duration, comment = duration.split(' ', 1)
+            else:
+                comment = query_string(win, 'Comment: ')
             status(win, 'Setting downtime ...')
             win.refresh()
             if char == 'd':
