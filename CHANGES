@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v15  2023-01-10
   [Changed]
   - More stable scrolling: Instead of jumping back to the very first
     item on changes, we try to find the previously selected item or an
