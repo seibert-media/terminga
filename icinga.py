@@ -103,47 +103,47 @@ class Icinga(object):
         return self.settings['base_url'] + '/api/v1/' + endpoint
 
     def get_current_state(self):
-        host_params = {}
-        service_params = {}
-
         # Filtering for groups has to be done differently depending on
         # whether you use terminga-proxy or not. In plain Icinga, you
         # need to use a full-blown filter query ("filter=..."). Filter
         # queries are not implemented in terminga-proxy at all. Instead,
         # we pass "hostgroup=..." directly (which is ignored by plain
         # Icinga).
-        if self.settings['use_group_filters']:
-            if self.settings['group_filters'].get('hostgroup'):
-                hg = quote_plus(self.settings['group_filters']['hostgroup'])
-                host_params = f'filter="{hg}"%20in%20host.groups'
-                host_params += f'&hostgroup={hg}'
-            if self.settings['group_filters'].get('servicegroup'):
-                sg = quote_plus(self.settings['group_filters']['servicegroup'])
-                service_params = f'filter="{sg}"%20in%20service.groups'
-                service_params += f'&servicegroup={sg}'
 
-        r = get(
-            self._api('objects/hosts'),
-            auth=self.settings['auth'],
-            params=host_params,
-            verify=self.settings['ssl_verify'],
-        )
-        r.raise_for_status()
-        hosts = r.json()
-
-        r = get(
-            self._api('objects/services'),
-            auth=self.settings['auth'],
-            params=service_params,
-            verify=self.settings['ssl_verify'],
-        )
-        r.raise_for_status()
-        services = r.json()
-
-        return {
-            'hosts': [IcingaItem(i) for i in hosts['results']],
-            'services': [IcingaItem(i) for i in services['results']],
+        filters = {
+            'host': [None],
+            'service': [None],
         }
+
+        if self.settings['use_group_filters']:
+            filters['host'] = self.settings['group_filters'].get('host_groups', [None])
+            filters['service'] = self.settings['group_filters'].get('service_groups', [None])
+
+        results = {
+            'hosts': [],
+            'services': [],
+        }
+
+        for thing in ('host', 'service'):
+            for group in filters[thing]:
+                params = {}
+                if group is not None:
+                    group = quote_plus(group)
+                    params = f'filter="{group}"%20in%20{thing}.groups'
+                    params += f'&{thing}group={group}'
+
+                r = get(
+                    self._api(f'objects/{thing}s'),
+                    auth=self.settings['auth'],
+                    params=params,
+                    verify=self.settings['ssl_verify'],
+                )
+                r.raise_for_status()
+                decoded_json = r.json()
+
+                results[f'{thing}s'].extend([IcingaItem(i) for i in decoded_json['results']])
+
+        return results
 
     def _queue_check_typed(self, items, item_type):
         items = [i for i in items if i.type == item_type]

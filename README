@@ -41,8 +41,8 @@ Create ~/.terminga, which consists of a JSON dict:
         },
         "external_tool": "mytool -s __SELECTION__",
         "group_filters": {
-            "hostgroup": "is_customer-no",
-            "servicegroup": "is_customer-no"
+            "host_groups": ["is_customer-no", "on_premise-no"],
+            "service_groups": ["is_customer-no", "on_premise-no"]
         },
         "hide_ack_from_broken": true,
         "jump_to_first_unhandled": true
