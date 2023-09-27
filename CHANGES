@@ -9,6 +9,8 @@ next
 
   [Added]
   - ACKs set an expiry date now.
+  - The config options "default_ack_duration" and
+    "default_downtime_duration" have been added.
 
 v15  2023-01-10
   [Changed]

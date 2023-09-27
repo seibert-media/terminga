@@ -215,6 +215,20 @@ def list_items(win, offset, current, icinga_items, selected):
     return used_by_output_pane
 
 
+def query_duration_comment(win, default_duration):
+    duration = query_string(win, f'Duration [{default_duration}]: ')
+
+    if ' ' in duration:
+        duration, comment = duration.split(' ', maxsplit=1)
+    else:
+        comment = query_string(win, 'Comment: ')
+
+    if duration == '':
+        duration = default_duration
+
+    return duration, comment
+
+
 def query_new_filter(win, existing):
     new = query_string(win, 'Add filter: ')
     if not new:
@@ -567,11 +581,7 @@ def interact(
             icinga.settings['use_group_filters'] = not icinga.settings['use_group_filters']
             force_refresh = True
         if char in ['a', 'A']:
-            duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
-            if ' ' in duration:
-                duration, comment = duration.split(' ', 1)
-            else:
-                comment = query_string(win, 'Comment: ')
+            duration, comment = query_duration_comment(win, icinga.settings['default_ack_duration'])
             status(win, 'Setting acknowledgement ...')
             win.refresh()
             if char == 'a':
@@ -580,11 +590,7 @@ def interact(
                 icinga.set_ack_for_host(items_for_action, icinga_items, comment, duration)
             force_refresh = True
         if char in ['d', 'D']:
-            duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
-            if ' ' in duration:
-                duration, comment = duration.split(' ', 1)
-            else:
-                comment = query_string(win, 'Comment: ')
+            duration, comment = query_duration_comment(win, icinga.settings['default_downtime_duration'])
             status(win, 'Setting downtime ...')
             win.refresh()
             if char == 'd':
@@ -690,6 +696,8 @@ if __name__ == '__main__':
     icinga.settings = {
         'auth': get_auth_from_config(config),
         'base_url': config['icinga_url'],
+        'default_ack_duration': config.get('default_ack_duration', '1d'),
+        'default_downtime_duration': config.get('default_downtime_duration', '1d'),
         'use_group_filters': True,
         'group_filters': config.get('group_filters', {}),
         'ssl_verify': config.get('ssl_verify', True),

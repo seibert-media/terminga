@@ -45,7 +45,9 @@ Create ~/.terminga, which consists of a JSON dict:
             "service_groups": ["is_customer-no", "on_premise-no"]
         },
         "hide_ack_from_broken": true,
-        "jump_to_first_unhandled": true
+        "jump_to_first_unhandled": true,
+        "default_ack_duration": "2d",
+        "default_downtime_duration": "14d"
     }
 
 Use a valid API user, not your regular Icinga user.
@@ -84,3 +86,7 @@ is enabled (it can be toggled by pressing "b").
 the cursor will jump to the first non-ACKed item on screen refreshes. It
 probably only makes sense to use this together with
 "hide_ack_from_broken" set to "false".
+
+"default_ack_duration" and "default_downtime_duration" set the
+corresponding default expiry times. If unset, both of them default to
+"1d".
