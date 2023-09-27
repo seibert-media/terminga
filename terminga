@@ -567,13 +567,17 @@ def interact(
             icinga.settings['use_group_filters'] = not icinga.settings['use_group_filters']
             force_refresh = True
         if char in ['a', 'A']:
-            comment = query_string(win, 'Comment: ')
+            duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')
+            if ' ' in duration:
+                duration, comment = duration.split(' ', 1)
+            else:
+                comment = query_string(win, 'Comment: ')
             status(win, 'Setting acknowledgement ...')
             win.refresh()
             if char == 'a':
-                icinga.set_ack(items_for_action, comment)
+                icinga.set_ack(items_for_action, comment, duration)
             else:
-                icinga.set_ack_for_host(items_for_action, icinga_items, comment)
+                icinga.set_ack_for_host(items_for_action, icinga_items, comment, duration)
             force_refresh = True
         if char in ['d', 'D']:
             duration = query_string(win, 'Duration (30s, 5m, 1h, 2d): ')

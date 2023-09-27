@@ -7,6 +7,9 @@ next
     other words, you can specify multiple filters now -- all filters
     will be queried and the results will be merged.
 
+  [Added]
+  - ACKs set an expiry date now.
+
 v15  2023-01-10
   [Changed]
   - More stable scrolling: Instead of jumping back to the very first
