@@ -102,26 +102,6 @@ class Icinga(object):
     def _api(self, endpoint):
         return self.settings['base_url'] + '/api/v1/' + endpoint
 
-    def _duration_to_times(self, duration):
-        try:
-            if duration.endswith('s'):
-                seconds = int(duration[:-1])
-            elif duration.endswith('m'):
-                seconds = int(duration[:-1]) * 60
-            elif duration.endswith('h'):
-                seconds = int(duration[:-1]) * 60 * 60
-            elif duration.endswith('d'):
-                seconds = int(duration[:-1]) * 60 * 60 * 24
-            else:
-                return None
-        except:
-            return None
-
-        start_time = datetime.now().timestamp()
-        end_time = start_time + seconds
-
-        return start_time, end_time
-
     def get_current_state(self):
         # Filtering for groups has to be done differently depending on
         # whether you use terminga-proxy or not. In plain Icinga, you
@@ -191,12 +171,7 @@ class Icinga(object):
         self._queue_check_typed(items, 'Host')
         self._queue_check_typed(items, 'Service')
 
-    def _set_ack_typed(self, items, comment, duration, item_type):
-        times = self._duration_to_times(duration)
-        if times is None:
-            return
-        _, end_time = times
-
+    def _set_ack_typed(self, items, comment, end_time, item_type):
         items = [i for i in items if i.type == item_type]
 
         chunk_size = 20
@@ -225,17 +200,11 @@ class Icinga(object):
                 verify=self.settings['ssl_verify'],
             )
 
-    def set_ack(self, items, comment, duration):
-        if not comment or not duration:
-            return
+    def set_ack(self, items, comment, end_time):
+        self._set_ack_typed(items, comment, end_time, 'Host')
+        self._set_ack_typed(items, comment, end_time, 'Service')
 
-        self._set_ack_typed(items, comment, duration, 'Host')
-        self._set_ack_typed(items, comment, duration, 'Service')
-
-    def set_ack_for_host(self, items, all_items, comment, duration):
-        if not comment or not duration:
-            return
-
+    def set_ack_for_host(self, items, all_items, comment, end_time):
         items_for_action = set()
 
         for i in all_items['hosts'] + all_items['services']:
@@ -243,8 +212,8 @@ class Icinga(object):
                 if i.host_name == sel.host_name:
                     items_for_action.add(i)
 
-        self._set_ack_typed(items_for_action, comment, duration, 'Host')
-        self._set_ack_typed(items_for_action, comment, duration, 'Service')
+        self._set_ack_typed(items_for_action, comment, end_time, 'Host')
+        self._set_ack_typed(items_for_action, comment, end_time, 'Service')
 
     def _set_downtime_typed(self, items, comment, start_time, end_time, item_type):
         items = [i for i in items if i.type == item_type]
@@ -273,19 +242,11 @@ class Icinga(object):
                 verify=self.settings['ssl_verify'],
             )
 
-    def set_downtime(self, items, comment, duration):
-        if not comment or not duration:
-            return
-
-        times = self._duration_to_times(duration)
-        if times is None:
-            return
-        start_time, end_time = times
-
+    def set_downtime(self, items, comment, start_time, end_time):
         self._set_downtime_typed(items, comment, start_time, end_time, 'Host')
         self._set_downtime_typed(items, comment, start_time, end_time, 'Service')
 
-    def set_downtime_for_host(self, items, comment, duration):
+    def set_downtime_for_host(self, items, comment, start_time, end_time):
         host_names = set()
         for i in items:
             host_names.add(i.host_name)
@@ -294,4 +255,4 @@ class Icinga(object):
         for i in host_names:
             dummys.add(IcingaItem(None, only_host_name=i))
 
-        self.set_downtime(dummys, comment, duration)
+        self.set_downtime(dummys, comment, start_time, end_time)

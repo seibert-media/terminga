@@ -215,18 +215,56 @@ def list_items(win, offset, current, icinga_items, selected):
     return used_by_output_pane
 
 
-def query_duration_comment(win, default_duration):
-    duration = query_string(win, f'Duration [{default_duration}]: ')
+def duration_to_times(duration):
+    try:
+        if duration.endswith('s'):
+            seconds = int(duration[:-1])
+        elif duration.endswith('m'):
+            seconds = int(duration[:-1]) * 60
+        elif duration.endswith('h'):
+            seconds = int(duration[:-1]) * 60 * 60
+        elif duration.endswith('d'):
+            seconds = int(duration[:-1]) * 60 * 60 * 24
+        else:
+            return None
+    except:
+        return None
 
+    start_time = datetime.now().timestamp()
+    end_time = start_time + seconds
+
+    return start_time, end_time
+
+
+def query_duration_comment(win, default_duration):
+    comment = None
+
+    duration = query_string(win, f'Duration [{default_duration}]: ')
     if ' ' in duration:
         duration, comment = duration.split(' ', maxsplit=1)
-    else:
-        comment = query_string(win, 'Comment: ')
 
     if duration == '':
         duration = default_duration
 
-    return duration, comment
+    times = duration_to_times(duration)
+    if times is None:
+        status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d, ...')
+        win.refresh()
+        sleep(2)
+        return None
+
+    if comment is None:
+        comment = query_string(win, 'Comment: ')
+
+    if comment == '':
+        status(win, 'Empty comment, aborted!')
+        win.refresh()
+        sleep(2)
+        return None
+
+    start_time, end_time = times
+
+    return comment, start_time, end_time
 
 
 def query_new_filter(win, existing):
@@ -581,23 +619,27 @@ def interact(
             icinga.settings['use_group_filters'] = not icinga.settings['use_group_filters']
             force_refresh = True
         if char in ['a', 'A']:
-            duration, comment = query_duration_comment(win, icinga.settings['default_ack_duration'])
-            status(win, 'Setting acknowledgement ...')
-            win.refresh()
-            if char == 'a':
-                icinga.set_ack(items_for_action, comment, duration)
-            else:
-                icinga.set_ack_for_host(items_for_action, icinga_items, comment, duration)
-            force_refresh = True
+            response = query_duration_comment(win, icinga.settings['default_ack_duration'])
+            if response is not None:
+                comment, _, end_time = response
+                status(win, 'Setting acknowledgement ...')
+                win.refresh()
+                if char == 'a':
+                    icinga.set_ack(items_for_action, comment, end_time)
+                else:
+                    icinga.set_ack_for_host(items_for_action, icinga_items, comment, end_time)
+                force_refresh = True
         if char in ['d', 'D']:
-            duration, comment = query_duration_comment(win, icinga.settings['default_downtime_duration'])
-            status(win, 'Setting downtime ...')
-            win.refresh()
-            if char == 'd':
-                icinga.set_downtime(items_for_action, comment, duration)
-            else:
-                icinga.set_downtime_for_host(items_for_action, comment, duration)
-            force_refresh = True
+            response = query_duration_comment(win, icinga.settings['default_downtime_duration'])
+            if response is not None:
+                comment, start_time, end_time = response
+                status(win, 'Setting downtime ...')
+                win.refresh()
+                if char == 'd':
+                    icinga.set_downtime(items_for_action, comment, start_time, end_time)
+                else:
+                    icinga.set_downtime_for_host(items_for_action, comment, start_time, end_time)
+                force_refresh = True
         if char in ['n']:
             status(win, 'Queueing checks ...')
             win.refresh()
