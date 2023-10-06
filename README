@@ -48,6 +48,7 @@ Create ~/.terminga, which consists of a JSON dict:
         "jump_to_first_unhandled": true,
         "default_ack_duration": "1d",
         "default_downtime_duration": "1d",
+        "show_detailed_output_on_startup": false,
         "size_of_item_area": 10
     }
 
@@ -91,6 +92,10 @@ probably only makes sense to use this together with
 "default_ack_duration" and "default_downtime_duration" set the
 corresponding default expiry times. If unset, both of them default to
 "1d".
+
+"show_detailed_output_on_startup" is optional. If set to "false",
+detailed check output will not be shown and you must press the
+appropriate key to do so (see help page).
 
 "size_of_item_area" configures the number of items to show above the
 pane showing detailed output. Defaults to 10.

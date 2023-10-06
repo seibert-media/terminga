@@ -507,7 +507,7 @@ def interact(win, icinga, config):
     selected = set()
     show_help = False
     force_jump_to_top = False
-    show_output_detail = False
+    show_output_detail = config['show_detailed_output_on_startup']
 
     refresh_every = timedelta(seconds=30)
     refresh_delta = timedelta(seconds=0)
@@ -804,10 +804,11 @@ if __name__ == '__main__':
         'ssl_verify': config.get('ssl_verify', True),
     }
 
-    config.setdefault('size_of_item_area', 10)
     config.setdefault('external_tool', None)
     config.setdefault('hide_ack_from_broken', False)
     config.setdefault('jump_to_first_unhandled', False)
+    config.setdefault('show_detailed_output_on_startup', True)
+    config.setdefault('size_of_item_area', 10)
 
     try:
         curses.wrapper(
