@@ -46,8 +46,8 @@ Create ~/.terminga, which consists of a JSON dict:
         },
         "hide_ack_from_broken": true,
         "jump_to_first_unhandled": true,
-        "default_ack_duration": "2d",
-        "default_downtime_duration": "14d",
+        "default_ack_duration": "1d",
+        "default_downtime_duration": "1d",
         "size_of_item_area": 10
     }
 
