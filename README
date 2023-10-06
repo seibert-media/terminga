@@ -47,7 +47,8 @@ Create ~/.terminga, which consists of a JSON dict:
         "hide_ack_from_broken": true,
         "jump_to_first_unhandled": true,
         "default_ack_duration": "2d",
-        "default_downtime_duration": "14d"
+        "default_downtime_duration": "14d",
+        "size_of_item_area": 10
     }
 
 Use a valid API user, not your regular Icinga user.
@@ -90,3 +91,6 @@ probably only makes sense to use this together with
 "default_ack_duration" and "default_downtime_duration" set the
 corresponding default expiry times. If unset, both of them default to
 "1d".
+
+"size_of_item_area" configures the number of items to show above the
+pane showing detailed output. Defaults to 10.

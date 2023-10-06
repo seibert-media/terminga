@@ -133,20 +133,21 @@ def filter_items(icinga_items, only_broken, hide_ack_from_broken, filters):
     return buffered
 
 
-def list_items(win, offset, current, icinga_items, selected):
+def list_items(
+    win,
+    offset,
+    current,
+    icinga_items,
+    selected,
+    show_output_detail,
+    size_of_item_area,
+    detailed_output_offset,
+):
     height, width = win.getmaxyx()
     margin_top = margin_bottom = 1
 
     try:
-        output_lines = []
-        for orig_line in icinga_items[current].output_lines:
-            wrapped_lines = wrap(
-                orig_line,
-                replace_whitespace=False,
-                width=width
-            )
-            for wrapped_line in wrapped_lines:
-                output_lines.append(wrapped_line)
+        output_lines = icinga_items[current].output_lines_wrapped
     except IndexError:
         output_lines = []
 
@@ -154,9 +155,19 @@ def list_items(win, offset, current, icinga_items, selected):
     if len(output_lines) > 0:
         output_extra = 1
 
-    # Always allow room for showing three items.
-    output_lines_max_allowed = height - margin_top - margin_bottom - output_extra - 3
-    output_lines = output_lines[:output_lines_max_allowed]
+    if len(output_lines) > 0 and show_output_detail:
+        output_lines_max_allowed = (
+            height -
+            margin_top -
+            margin_bottom -
+            output_extra -
+            size_of_item_area
+        )
+        output_lines = output_lines[detailed_output_offset:]
+        output_lines = output_lines[:output_lines_max_allowed]
+        output_lines += ['~'] * (output_lines_max_allowed - len(output_lines))
+    else:
+        output_lines = []
 
     used_by_output_pane = len(output_lines) + output_extra
     usable_height_for_items = height - margin_top - margin_bottom - used_by_output_pane
@@ -345,33 +356,38 @@ def run_external_tool(items, external_tool):
 
 def show_help_screen(win):
     msg = '''
-    q        Quit program
-    ?        Help
+    ?           Help
+    Q           Quit immediately
+    q           Quit if detailed output not shown, hide detailed output
+                otherwise
+    h           Hide detailed output
+    l, <Enter>  Show detailed output
+    J, K        Scroll detailed output one line down / up
 
-    r        Refresh
+    j, k        Scroll item list one line down / up
+    g, G        Scroll item list to top / bottom
+    ^F, ^G      Scroll item list half a page down / up
 
-    b        Toggle "show only broken items"
-    a        Add ACK to current / selected items
-    A        Add ACK to current / selected host and all its services
-    d        Put current / selected items in downtime
-    D        Put current / selected host and all its services in downtime
-    n        Check current / selected items NOW
-    e        Launch external tool on current item
+    r           Refresh
 
-    f        Add filter regex (start with "!" for negative filter)
-    F        Pop right-most filter
-    v        Pop left-most filter
-    H        Add host name of currently selected item to filters
-    S        Add service name of currently selected item to filters
-    C        Toggles usage of custom group filters
+    b           Toggle "show only broken items"
+    a           Add ACK to current / selected items
+    A           Add ACK to current / selected host and all its services
+    d           Put current / selected items in downtime
+    D           Put current / selected host and all its services in downtime
+    n           Check current / selected items NOW
+    e           Launch external tool on current item
 
-    <Space>  Select / unselect current item
-    ^A       Select all currently visible items
-    c        Clear selection
+    f           Add filter regex (start with "!" for negative filter)
+    F           Pop right-most filter
+    v           Pop left-most filter
+    H           Add host name of currently selected item to filters
+    S           Add service name of currently selected item to filters
+    C           Toggles usage of custom group filters
 
-    j, k     Scroll one line down / up
-    g, G     Scroll to top / bottom
-    ^F, ^G   Scroll half a page down / up
+    <Space>     Select / unselect current item
+    ^A          Select all currently visible items
+    c           Clear selection
     '''
 
     height, width = win.getmaxyx()
@@ -459,13 +475,19 @@ def determine_current(current, current_item, items):
             return 0, None
 
 
-def interact(
-    win,
-    icinga,
-    external_tool,
-    hide_ack_from_broken,
-    jump_to_first_unhandled,
-):
+def wrap_output(item, width):
+    item.output_lines_wrapped = []
+    for orig_line in item.output_lines:
+        wrapped_lines = wrap(
+            orig_line,
+            replace_whitespace=False,
+            width=width,
+        )
+        for wrapped_line in wrapped_lines:
+            item.output_lines_wrapped.append(wrapped_line)
+
+
+def interact(win, icinga, config):
     curses.curs_set(False)
 
     curses.use_default_colors()
@@ -485,6 +507,7 @@ def interact(
     selected = set()
     show_help = False
     force_jump_to_top = False
+    show_output_detail = False
 
     refresh_every = timedelta(seconds=30)
     refresh_delta = timedelta(seconds=0)
@@ -493,6 +516,7 @@ def interact(
     current_item = None
     offset = 0
     bottompad = starty = 1
+    detailed_output_offset = 0
 
     title(win, HELP)
     status(win, '')
@@ -519,14 +543,14 @@ def interact(
             to_display = sorted(filter_items(
                 icinga_items,
                 only_broken,
-                hide_ack_from_broken,
+                config['hide_ack_from_broken'],
                 filters,
             ))
             scroll_dirty = True
             filter_dirty = False
 
         if scroll_dirty:
-            if jump_to_first_unhandled:
+            if config['jump_to_first_unhandled']:
                 for i, item in enumerate(to_display):
                     if item.acknowledgement + item.downtime_depth == 0:
                         current = i
@@ -563,6 +587,8 @@ def interact(
                 len(to_display),
             )
 
+            detailed_output_offset = 0
+
             scroll_dirty = False
             force_jump_to_top = False
 
@@ -589,7 +615,26 @@ def interact(
                     len(to_display),
                 ),
             )
-            border_pane = list_items(win, offset, current, to_display, selected)
+
+            if current_item is None:
+                detailed_output_offset = 0
+            else:
+                wrap_output(current_item, width)
+                if detailed_output_offset < 0:
+                    detailed_output_offset = 0
+                elif detailed_output_offset >= len(current_item.output_lines_wrapped) - 1:
+                    detailed_output_offset = len(current_item.output_lines_wrapped) - 1
+
+            border_pane = list_items(
+                win,
+                offset,
+                current,
+                to_display,
+                selected,
+                show_output_detail,
+                config['size_of_item_area'],
+                detailed_output_offset,
+            )
             height -= border_pane
 
         win.refresh()
@@ -609,7 +654,17 @@ def interact(
                 items_for_action = set()
 
         if char in ['q']:
+            if show_output_detail:
+                show_output_detail = False
+            else:
+                return
+        if char in ['Q']:
             return
+        if char in ['h']:
+            show_output_detail = False
+        if char in ['\n', 'l']:
+            show_output_detail = True
+
         if char in ['?']:
             show_help = not show_help
         if char in ['b']:
@@ -646,7 +701,7 @@ def interact(
             icinga.queue_check(items_for_action)
             force_refresh = True
         if char in ['e']:
-            run_external_tool(items_for_action, external_tool)
+            run_external_tool(items_for_action, config['external_tool'])
         if char in ['r']:
             force_refresh = True
         if char in ['f']:
@@ -684,6 +739,10 @@ def interact(
             selected = set()
 
         # Scrolling.
+        if char in ['J']:
+            detailed_output_offset += 1
+        if char in ['K']:
+            detailed_output_offset -= 1
         if char in ['j', 'KEY_DOWN']:
             current += 1
             scroll_dirty = True
@@ -745,17 +804,16 @@ if __name__ == '__main__':
         'ssl_verify': config.get('ssl_verify', True),
     }
 
-    external_tool = config.get('external_tool')
-    hide_ack_from_broken = config.get('hide_ack_from_broken', False)
-    jump_to_first_unhandled = config.get('jump_to_first_unhandled', False)
+    config.setdefault('size_of_item_area', 10)
+    config.setdefault('external_tool', None)
+    config.setdefault('hide_ack_from_broken', False)
+    config.setdefault('jump_to_first_unhandled', False)
 
     try:
         curses.wrapper(
             interact,
             icinga,
-            external_tool,
-            hide_ack_from_broken,
-            jump_to_first_unhandled,
+            config,
         )
         exit(0)
     except Exception:

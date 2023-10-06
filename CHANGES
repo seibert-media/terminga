@@ -11,6 +11,9 @@ next
   - ACKs set an expiry date now.
   - The config options "default_ack_duration" and
     "default_downtime_duration" have been added.
+  - Display of detailed output can be toggled now. Introduces config
+    option "size_of_item_area".
+  - Detailed output can be scrolled.
 
 v15  2023-01-10
   [Changed]
