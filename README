@@ -60,7 +60,7 @@ this command will then be used as password.
 "ssl_verify" allows disabling ssl verification when connecting to icinga.
 This is needed if you don't use a reverse proxy infront of your icinga2
 instance, but are connecting to your icinga2 api port directly. If using
-the default `true`, you can omit this key entirely.
+the default "true", you can omit this key entirely.
 
 "external_tool" contains a path to a user-supplied script and this
 setting is optional. It will be invoked when you press "e" in terminga.
