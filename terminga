@@ -146,16 +146,19 @@ def list_items(
     height, width = win.getmaxyx()
     margin_top = margin_bottom = 1
 
-    try:
-        output_lines = icinga_items[current].output_lines_wrapped
-    except IndexError:
+    if show_output_detail:
+        try:
+            output_lines = icinga_items[current].output_lines_wrapped
+        except IndexError:
+            output_lines = []
+    else:
         output_lines = []
 
     output_extra = 0
     if len(output_lines) > 0:
         output_extra = 1
 
-    if len(output_lines) > 0 and show_output_detail:
+    if len(output_lines) > 0:
         output_lines_max_allowed = (
             height -
             margin_top -
@@ -166,8 +169,6 @@ def list_items(
         output_lines = output_lines[detailed_output_offset:]
         output_lines = output_lines[:output_lines_max_allowed]
         output_lines += ['~'] * (output_lines_max_allowed - len(output_lines))
-    else:
-        output_lines = []
 
     used_by_output_pane = len(output_lines) + output_extra
     usable_height_for_items = height - margin_top - margin_bottom - used_by_output_pane
