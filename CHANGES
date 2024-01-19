@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v16  2024-01-19
   [Changed]
   - Group filtering has been extended. The config options are now called
     "host_groups" and "service_groups", and they are JSON lists. In
