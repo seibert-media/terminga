@@ -11,7 +11,6 @@ from operator import itemgetter
 from os import execv, fdopen
 from os.path import expanduser
 from shlex import split
-from signal import signal, SIGCHLD, SIG_IGN
 from subprocess import Popen, check_output
 from sys import argv
 from tempfile import mkstemp
@@ -328,7 +327,7 @@ def red_body(win):
 
 def run_external_tool(items, external_tool):
     if not external_tool:
-        return
+        return []
 
     args = split(external_tool)
 
@@ -351,8 +350,7 @@ def run_external_tool(items, external_tool):
         else:
             args_now.append(a)
 
-    signal(SIGCHLD, SIG_IGN)
-    Popen(args_now)
+    return [Popen(args_now)]
 
 
 def show_help_screen(win):
@@ -522,6 +520,8 @@ def interact(win, icinga, config):
     title(win, HELP)
     status(win, '')
 
+    children = []
+
     while True:
         height, width = win.getmaxyx()
 
@@ -646,6 +646,9 @@ def interact(win, icinga, config):
             char = None
         win.timeout(-1)
 
+        for child_pid in children:
+            child_pid.poll()
+
         if selected:
             items_for_action = selected
         else:
@@ -702,7 +705,7 @@ def interact(win, icinga, config):
             icinga.queue_check(items_for_action)
             force_refresh = True
         if char in ['e']:
-            run_external_tool(items_for_action, config['external_tool'])
+            children.extend(run_external_tool(items_for_action, config['external_tool']))
         if char in ['r']:
             force_refresh = True
         if char in ['f']:
