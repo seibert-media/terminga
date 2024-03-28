@@ -39,7 +39,7 @@ Create ~/.terminga, which consists of a JSON dict:
             "username": "myapiuser",
             "password": "myapiuserspassword"
         },
-        "external_tool": "mytool -s __SELECTION__",
+        "external_tool": "mytool -s __SELECTION__ -o __TOOL_OUTPUT__",
         "group_filters": {
             "host_groups": ["is_customer-no", "on_premise-no"],
             "service_groups": ["is_customer-no", "on_premise-no"]
@@ -68,8 +68,27 @@ setting is optional. It will be invoked when you press "e" in terminga.
 your selection: First line is host name, second line service name, third
 line check output (with lines separated by \r rather than \n). This
 repeats for each selected item, i.e. your script will only be called
-once, no matter how many items you selected. It is the responsibility of
-your script to remove this file after it has been read.
+once, no matter how many items you selected. (terminga will remove this
+file after your tool has quit.)
+
+When launching "external_tool", the string "__TOOL_OUTPUT__" will be
+replaced with a path to a file where your tool can store its own output
+string. (terminga will remove this file after your tool has quit.) This
+is relevant when using the "!" feature: When asked to enter a comment,
+e.g. when setting ACKs or downtimes, you can specify "!" as a comment.
+This will cause terminga to launch your external tool. Whatever your
+tool has written to the "__TOOL_OUTPUT__" file will then be used as the
+actual comment.
+
+The purpose of the "!" feature is to allow you to create issues in your
+ticket system from terminga: You select some Icinga alerts, then press
+"a" or "d", use "!" as a comment and then your external tool can do
+whatever magic it needs to create a ticket -- and finally it can write
+the ID of the ticket or its URL to the "__TOOL_OUTPUT__" file.
+
+(Note that "-s" and "-o" in the config snippet above are only examples.
+You don't need to use them and terminga doesn't care, it will only
+replace the special strings.)
 
 You will want to use terminga-proxy on your Icinga server, if you're
 still running a version of Icinga2 that leaks memory on API requests:

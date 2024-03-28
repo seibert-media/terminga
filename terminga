@@ -8,7 +8,7 @@ from curses.textpad import Textbox
 from datetime import datetime, timedelta
 from json import loads
 from operator import itemgetter
-from os import execv, fdopen
+from os import execv, fdopen, remove, close
 from os.path import expanduser
 from shlex import split
 from subprocess import Popen, check_output
@@ -247,7 +247,7 @@ def duration_to_times(duration):
     return start_time, end_time
 
 
-def query_duration_comment(win, default_duration):
+def query_duration_comment(win, items, external_tool, default_duration):
     comment = None
 
     duration = query_string(win, f'Duration [{default_duration}]: ')
@@ -272,6 +272,9 @@ def query_duration_comment(win, default_duration):
         win.refresh()
         sleep(2)
         return None
+
+    if comment == '!':
+        comment = external_tool_output(items, external_tool)
 
     start_time, end_time = times
 
@@ -337,20 +340,41 @@ def run_external_tool(items, external_tool):
         input_list.append(i.service_name)
         input_list.append('\r'.join(i.output_lines))
 
-    fd, path = mkstemp()
+    fd, path_selection = mkstemp()
     fp = fdopen(fd, 'w')
     fp.write('\n'.join(input_list))
     fp.write('\n')
     fp.close()
 
+    fd, path_output = mkstemp()
+    close(fd)
+
     args_now = []
     for a in args:
         if a == '__SELECTION__':
-            args_now.append(path)
+            args_now.append(path_selection)
+        elif a == '__TOOL_OUTPUT__':
+            args_now.append(path_output)
         else:
             args_now.append(a)
 
-    return [Popen(args_now)]
+    return [(Popen(args_now), path_selection, path_output)]
+
+
+def external_tool_output(items, external_tool):
+    child_pid, path_selection, path_output = run_external_tool(items, external_tool)[0]
+    child_pid.wait()
+
+    with open(path_output, 'r') as fp:
+        child_output = fp.read().strip()
+
+    try:
+        remove(path_selection)
+        remove(path_output)
+    except FileNotFoundError:
+        pass
+
+    return child_output
 
 
 def show_help_screen(win):
@@ -646,8 +670,18 @@ def interact(win, icinga, config):
             char = None
         win.timeout(-1)
 
-        for child_pid in children:
-            child_pid.poll()
+        new_children = []
+        for child_info in children:
+            child_pid, path_selection, path_output = child_info
+            if child_pid.poll() is None:
+                new_children.append(child_info)
+            else:
+                try:
+                    remove(path_selection)
+                    remove(path_output)
+                except FileNotFoundError:
+                    pass
+        children = new_children
 
         if selected:
             items_for_action = selected
@@ -678,7 +712,12 @@ def interact(win, icinga, config):
             icinga.settings['use_group_filters'] = not icinga.settings['use_group_filters']
             force_refresh = True
         if char in ['a', 'A']:
-            response = query_duration_comment(win, icinga.settings['default_ack_duration'])
+            response = query_duration_comment(
+                win,
+                items_for_action,
+                config['external_tool'],
+                icinga.settings['default_ack_duration'],
+            )
             if response is not None:
                 comment, _, end_time = response
                 status(win, 'Setting acknowledgement ...')
@@ -689,7 +728,12 @@ def interact(win, icinga, config):
                     icinga.set_ack_for_host(items_for_action, icinga_items, comment, end_time)
                 force_refresh = True
         if char in ['d', 'D']:
-            response = query_duration_comment(win, icinga.settings['default_downtime_duration'])
+            response = query_duration_comment(
+                win,
+                items_for_action,
+                config['external_tool'],
+                icinga.settings['default_downtime_duration'],
+            )
             if response is not None:
                 comment, start_time, end_time = response
                 status(win, 'Setting downtime ...')
