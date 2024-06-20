@@ -137,6 +137,7 @@ class Icinga(object):
                     auth=self.settings['auth'],
                     params=params,
                     verify=self.settings['ssl_verify'],
+                    timeout=5,
                 )
                 r.raise_for_status()
                 decoded_json = r.json()
@@ -165,6 +166,7 @@ class Icinga(object):
                 headers={'Accept': 'application/json'},
                 json=data,
                 verify=self.settings['ssl_verify'],
+                timeout=5,
             )
 
     def queue_check(self, items):
@@ -198,6 +200,7 @@ class Icinga(object):
                 headers={'Accept': 'application/json'},
                 json=data,
                 verify=self.settings['ssl_verify'],
+                timeout=5,
             )
 
     def set_ack(self, items, comment, end_time):
@@ -240,6 +243,7 @@ class Icinga(object):
                 headers={'Accept': 'application/json'},
                 json=data,
                 verify=self.settings['ssl_verify'],
+                timeout=5,
             )
 
     def set_downtime(self, items, comment, start_time, end_time):
