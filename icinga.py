@@ -182,10 +182,10 @@ class Icinga(object):
             for i in items[c:c + chunk_size]:
                 filters.append('(' + i.get_filter() + ')')
 
+
             data = {
                 'author': getuser(),
                 'comment': comment,
-                'expiry': end_time,
                 'type': item_type,
                 'filter': ' || '.join(filters),
 
@@ -193,6 +193,8 @@ class Icinga(object):
                 # service or host fully recovers. Defaults to false."
                 'sticky': True,
             }
+            if end_time:
+                data['end_time'] = end_time
 
             r = post(
                 self._api('actions/acknowledge-problem'),

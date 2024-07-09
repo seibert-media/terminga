@@ -247,22 +247,30 @@ def duration_to_times(duration):
     return start_time, end_time
 
 
-def query_duration_comment(win, items, external_tool, default_duration):
+def query_duration_comment(win, items, external_tool, default_duration, force_duration=True):
     comment = None
 
-    duration = query_string(win, f'Duration [{default_duration}]: ')
+    if force_duration:
+        duration = query_string(win, f'Duration [{default_duration}]: ')
+    else:
+        duration = query_string(win, 'Duration: ')
     if ' ' in duration:
         duration, comment = duration.split(' ', maxsplit=1)
 
-    if duration == '':
+    if duration == '' and force_duration:
         duration = default_duration
 
     times = duration_to_times(duration)
     if times is None:
-        status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d, ...')
-        win.refresh()
-        sleep(2)
-        return None
+        if force_duration:
+            status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d, ...')
+            win.refresh()
+            sleep(2)
+            return None
+        else:
+            start_time, end_time = None, None
+    else:
+        start_time, end_time = times
 
     if comment is None:
         comment = query_string(win, 'Comment: ')
@@ -275,8 +283,6 @@ def query_duration_comment(win, items, external_tool, default_duration):
 
     if comment == '!':
         comment = external_tool_output(items, external_tool)
-
-    start_time, end_time = times
 
     return comment, start_time, end_time
 
@@ -717,6 +723,7 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_ack_duration'],
+                force_duration=False,
             )
             if response is not None:
                 comment, _, end_time = response
