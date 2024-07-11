@@ -194,7 +194,7 @@ class Icinga(object):
                 'sticky': True,
             }
             if end_time:
-                data['end_time'] = end_time
+                data['expiry'] = end_time
 
             r = post(
                 self._api('actions/acknowledge-problem'),

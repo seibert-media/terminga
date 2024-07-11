@@ -227,6 +227,9 @@ def list_items(
 
 
 def duration_to_times(duration):
+    if duration.lower() == 'none':
+        return False
+
     try:
         if duration.endswith('s'):
             seconds = int(duration[:-1])
@@ -247,8 +250,12 @@ def duration_to_times(duration):
     return start_time, end_time
 
 
-def query_duration_comment(win, items, external_tool, default_duration, force_duration=True):
+def query_duration_comment(win, items, external_tool, default_duration):
     comment = None
+
+    force_duration = True
+    if default_duration.lower() == 'none':
+        force_duration = False
 
     if force_duration:
         duration = query_string(win, f'Duration [{default_duration}]: ')
@@ -269,6 +276,8 @@ def query_duration_comment(win, items, external_tool, default_duration, force_du
             return None
         else:
             start_time, end_time = None, None
+    elif times is False:
+        start_time, end_time = None, None
     else:
         start_time, end_time = times
 
@@ -723,7 +732,6 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_ack_duration'],
-                force_duration=False,
             )
             if response is not None:
                 comment, _, end_time = response
@@ -852,7 +860,7 @@ if __name__ == '__main__':
     icinga.settings = {
         'auth': get_auth_from_config(config),
         'base_url': config['icinga_url'],
-        'default_ack_duration': config.get('default_ack_duration', '1d'),
+        'default_ack_duration': config.get('default_ack_duration', 'none'),
         'default_downtime_duration': config.get('default_downtime_duration', '1d'),
         'use_group_filters': True,
         'group_filters': config.get('group_filters', {}),
