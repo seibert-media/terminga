@@ -258,29 +258,19 @@ def duration_to_times(duration):
 def query_duration_comment(win, items, external_tool, default_duration):
     comment = None
 
-    force_duration = True
-    if default_duration.lower() == 'none':
-        force_duration = False
-
-    if force_duration:
-        duration = query_string(win, f'Duration [{default_duration}]: ')
-    else:
-        duration = query_string(win, 'Duration: ')
+    duration = query_string(win, f'Duration [{default_duration}]: ')
     if ' ' in duration:
         duration, comment = duration.split(' ', maxsplit=1)
 
-    if duration == '' and force_duration:
+    if duration == '':
         duration = default_duration
 
     times = duration_to_times(duration)
     if times is DurationResult.ParseError:
-        if force_duration:
-            status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d, ...')
-            win.refresh()
-            sleep(2)
-            return None
-        else:
-            start_time, end_time = None, None
+        status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d or "none"')
+        win.refresh()
+        sleep(2)
+        return None
     elif times is DurationResult.NoDuration:
         start_time, end_time = None, None
     else:
