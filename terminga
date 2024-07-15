@@ -255,7 +255,18 @@ def duration_to_times(duration):
     return start_time, end_time
 
 
-def query_duration_comment(win, items, external_tool, default_duration):
+def query_duration_comment(
+    win,
+    items,
+    external_tool,
+    default_duration,
+    needs_duration,
+):
+    if needs_duration:
+        msg_suffix = ''
+    else:
+        msg_suffix = ' or "none"'
+
     comment = None
 
     duration = query_string(win, f'Duration [{default_duration}]: ')
@@ -267,11 +278,16 @@ def query_duration_comment(win, items, external_tool, default_duration):
 
     times = duration_to_times(duration)
     if times is DurationResult.ParseError:
-        status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d or "none"')
+        status(win, f'Invalid duration! Use something like 30s, 5m, 1h, 2d{msg_suffix}')
         win.refresh()
         sleep(2)
         return None
     elif times is DurationResult.NoDuration:
+        if needs_duration:
+            status(win, 'You need to specify a duration, aborted!')
+            win.refresh()
+            sleep(2)
+            return None
         start_time, end_time = None, None
     else:
         start_time, end_time = times
@@ -727,6 +743,7 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_ack_duration'],
+                False,
             )
             if response is not None:
                 comment, _, end_time = response
@@ -743,6 +760,7 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_downtime_duration'],
+                True,
             )
             if response is not None:
                 comment, start_time, end_time = response
