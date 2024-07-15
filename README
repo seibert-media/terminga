@@ -109,8 +109,9 @@ probably only makes sense to use this together with
 "hide_ack_from_broken" set to "false".
 
 "default_ack_duration" and "default_downtime_duration" set the
-corresponding default expiry times. If unset, both of them default to
-"1d".
+corresponding default expiry times. If unset, "default_ack_duration"
+defaults to the string "none" (no expiry) and
+"default_downtime_duration" defaults to "1d".
 
 "show_detailed_output_on_startup" is optional. If set to "false",
 detailed check output will not be shown and you must press the
