@@ -6,6 +6,7 @@ import re
 
 from curses.textpad import Textbox
 from datetime import datetime, timedelta
+from enum import Enum, auto
 from json import loads
 from operator import itemgetter
 from os import execv, fdopen, remove, close
@@ -44,6 +45,10 @@ STATES = {
     'critical': 2,
     'unknown': 3,
 }
+
+class DurationResult(Enum):
+    NoDuration = auto()
+    ParseError = auto()
 
 
 def addstr(win, *args, **kwargs):
@@ -227,6 +232,9 @@ def list_items(
 
 
 def duration_to_times(duration):
+    if duration.lower() == 'none':
+        return DurationResult.NoDuration
+
     try:
         if duration.endswith('s'):
             seconds = int(duration[:-1])
@@ -237,9 +245,9 @@ def duration_to_times(duration):
         elif duration.endswith('d'):
             seconds = int(duration[:-1]) * 60 * 60 * 24
         else:
-            return None
+            return DurationResult.ParseError
     except:
-        return None
+        return DurationResult.ParseError
 
     start_time = datetime.now().timestamp()
     end_time = start_time + seconds
@@ -247,7 +255,18 @@ def duration_to_times(duration):
     return start_time, end_time
 
 
-def query_duration_comment(win, items, external_tool, default_duration):
+def query_duration_comment(
+    win,
+    items,
+    external_tool,
+    default_duration,
+    needs_duration,
+):
+    if needs_duration:
+        msg_suffix = ''
+    else:
+        msg_suffix = ' or "none"'
+
     comment = None
 
     duration = query_string(win, f'Duration [{default_duration}]: ')
@@ -258,11 +277,20 @@ def query_duration_comment(win, items, external_tool, default_duration):
         duration = default_duration
 
     times = duration_to_times(duration)
-    if times is None:
-        status(win, 'Invalid duration! Use something like 30s, 5m, 1h, 2d, ...')
+    if times is DurationResult.ParseError:
+        status(win, f'Invalid duration! Use something like 30s, 5m, 1h, 2d{msg_suffix}')
         win.refresh()
         sleep(2)
         return None
+    elif times is DurationResult.NoDuration:
+        if needs_duration:
+            status(win, 'You need to specify a duration, aborted!')
+            win.refresh()
+            sleep(2)
+            return None
+        start_time, end_time = None, None
+    else:
+        start_time, end_time = times
 
     if comment is None:
         comment = query_string(win, 'Comment: ')
@@ -275,8 +303,6 @@ def query_duration_comment(win, items, external_tool, default_duration):
 
     if comment == '!':
         comment = external_tool_output(items, external_tool)
-
-    start_time, end_time = times
 
     return comment, start_time, end_time
 
@@ -717,6 +743,7 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_ack_duration'],
+                False,
             )
             if response is not None:
                 comment, _, end_time = response
@@ -733,6 +760,7 @@ def interact(win, icinga, config):
                 items_for_action,
                 config['external_tool'],
                 icinga.settings['default_downtime_duration'],
+                True,
             )
             if response is not None:
                 comment, start_time, end_time = response
@@ -845,7 +873,7 @@ if __name__ == '__main__':
     icinga.settings = {
         'auth': get_auth_from_config(config),
         'base_url': config['icinga_url'],
-        'default_ack_duration': config.get('default_ack_duration', '1d'),
+        'default_ack_duration': config.get('default_ack_duration', 'none'),
         'default_downtime_duration': config.get('default_downtime_duration', '1d'),
         'use_group_filters': True,
         'group_filters': config.get('group_filters', {}),
