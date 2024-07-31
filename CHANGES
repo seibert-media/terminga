@@ -11,6 +11,7 @@ next
   [Added]
   - "!" as a comment: Will launch your external tool. See explanation
     in the README file.
+  - ACKs no longer *need* an expiry date.
 
 v16  2024-01-19
   [Changed]
