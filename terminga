@@ -569,6 +569,7 @@ def interact(win, icinga, config):
     offset = 0
     bottompad = starty = 1
     detailed_output_offset = 0
+    to_display = []
 
     title(win, HELP)
     status(win, '')
@@ -620,15 +621,16 @@ def interact(win, icinga, config):
                     to_display,
                 )
 
-            if current < 0:
-                current = 0
-            if current >= len(to_display):
-                current = len(to_display) - 1
-
             if len(to_display) > 0:
+                if current < 0:
+                    current = 0
+                if current >= len(to_display):
+                    current = len(to_display) - 1
+
                 if current < len(to_display):
                     current_item = to_display[current]
             else:
+                current = 0
                 current_item = None
 
             offset = scroll_if_needed(
