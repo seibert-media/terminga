@@ -1,6 +1,6 @@
 Release history for terminga
 
-next
+v17  2024-11-25
   [Fixed]
   - Don't mess with SIGCHLD, just reap children. This fixes error
     messages when using some terminals (VTE, for example).
