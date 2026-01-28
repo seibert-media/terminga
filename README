@@ -119,3 +119,12 @@ appropriate key to do so (see help page).
 
 "size_of_item_area" configures the number of items to show above the
 pane showing detailed output. Defaults to 10.
+
+
+License
+-------
+
+Copyright (c) 2019-2024 Peter Hofmann
+Copyright (c) 2020-2022, 2024-2025 Franziska Kunsmann
+
+Distributed under the terms listed in the LICENSE file.

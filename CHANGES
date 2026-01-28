@@ -1,5 +1,9 @@
 Release history for terminga
 
+next
+  [LICENSING]
+  - This project has been relicensed under "GPLv3 or later".
+
 v17  2024-11-25
   [Fixed]
   - Don't mess with SIGCHLD, just reap children. This fixes error
