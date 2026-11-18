@@ -21,7 +21,7 @@ from traceback import print_exc
 
 from icinga import Icinga
 
-from requests import ConnectionError, HTTPError
+from requests import ConnectionError, HTTPError, Timeout
 
 
 VERSION = 'v18'
@@ -586,7 +586,7 @@ def interact(win, icinga, config):
             selected = set()
             try:
                 icinga_items = icinga.get_current_state()
-            except (ConnectionError, HTTPError):
+            except (ConnectionError, HTTPError, Timeout):
                 icinga_items = None
             last_key = datetime.now()
             refresh_delta = timedelta(seconds=0)
