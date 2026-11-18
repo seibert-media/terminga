@@ -575,6 +575,7 @@ def interact(win, icinga, config):
     filter_dirty = True
     force_refresh = True
     fetching = False
+    jump_pending = False
     refresh_pending = False
     results = Queue()
     icinga_items = None
@@ -620,6 +621,7 @@ def interact(win, icinga, config):
             refresh_delta = timedelta(seconds=0)
             filter_dirty = True
             scroll_dirty = True
+            jump_pending = True
             if refresh_pending:
                 force_refresh = True
                 refresh_pending = False
@@ -651,12 +653,14 @@ def interact(win, icinga, config):
             filter_dirty = False
 
         if scroll_dirty:
-            if config['jump_to_first_unhandled']:
+            # Only jump when new data arrived, not on cursor movement.
+            if config['jump_to_first_unhandled'] and jump_pending:
                 for i, item in enumerate(to_display):
                     if item.acknowledgement + item.downtime_depth == 0:
                         current = i
                         current_item = item
                         break
+            jump_pending = False
 
             if len(to_display) > 0:
                 if current < 0:
