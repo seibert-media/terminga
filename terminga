@@ -500,8 +500,8 @@ def standard_status(
     return msg
 
 
-def scroll_if_needed(current, force_jump_to_top, offset, height, bottompad, starty, len_to_display):
-    if force_jump_to_top or len_to_display < height:
+def scroll_if_needed(current, offset, height, bottompad, starty, len_to_display):
+    if len_to_display < height:
         return 0
 
     if current - offset >= (height - bottompad) - starty:
@@ -582,11 +582,11 @@ def interact(win, icinga, config):
     scroll_dirty = True
     selected = set()
     show_help = False
-    force_jump_to_top = False
     show_output_detail = config['show_detailed_output_on_startup']
 
     refresh_every = timedelta(seconds=30)
     refresh_delta = timedelta(seconds=0)
+    last_refresh = datetime.now()
 
     current = 0
     current_item = None
@@ -611,8 +611,12 @@ def interact(win, icinga, config):
             if isinstance(icinga_items, Exception):
                 raise icinga_items
             fetching = False
-            selected = set()
-            last_key = datetime.now()
+            if icinga_items is None:
+                selected = set()
+            else:
+                # Keep selections, but drop items that no longer exist.
+                selected &= set(icinga_items['hosts'] + icinga_items['services'])
+            last_refresh = datetime.now()
             refresh_delta = timedelta(seconds=0)
             filter_dirty = True
             scroll_dirty = True
@@ -637,6 +641,12 @@ def interact(win, icinga, config):
                 config['hide_ack_from_broken'],
                 filters,
             ))
+            # Keep the cursor on the same item, if it's still there.
+            current, current_item = determine_current(
+                current,
+                current_item,
+                to_display,
+            )
             scroll_dirty = True
             filter_dirty = False
 
@@ -647,15 +657,6 @@ def interact(win, icinga, config):
                         current = i
                         current_item = item
                         break
-            elif force_jump_to_top:
-                current = 0
-                current_item = None
-
-                current, current_item = determine_current(
-                    current,
-                    current_item,
-                    to_display,
-                )
 
             if len(to_display) > 0:
                 if current < 0:
@@ -671,7 +672,6 @@ def interact(win, icinga, config):
 
             offset = scroll_if_needed(
                 current,
-                force_jump_to_top,
                 offset,
                 height,
                 bottompad,
@@ -682,7 +682,6 @@ def interact(win, icinga, config):
             detailed_output_offset = 0
 
             scroll_dirty = False
-            force_jump_to_top = False
 
         win.erase()
         title(win, HELP)
@@ -886,20 +885,9 @@ def interact(win, icinga, config):
             current -= int(0.5 * (height - starty))
             scroll_dirty = True
 
-        if char is not None:
-            last_key = datetime.now()
-            refresh_delta = timedelta(seconds=0)
-            # Don't yank the cursor to the top when an auto refresh
-            # finishes while the user is busy.
-            force_jump_to_top = False
-        elif fetching:
-            last_key = datetime.now()
-        else:
-            refresh_delta = datetime.now() - last_key
-            if refresh_delta > refresh_every:
-                force_refresh = True
-                force_jump_to_top = True
-                last_key = datetime.now()
+        refresh_delta = datetime.now() - last_refresh
+        if not fetching and refresh_delta > refresh_every:
+            force_refresh = True
 
 
 def get_auth_from_config(config):
