@@ -1,5 +1,10 @@
 Release history for terminga
 
+next
+  [Changed]
+  - Refreshes now happen in the background. Scroll position is preserved
+    during refreshes.
+
 v18  2026-01-28
   [LICENSING]
   - This project has been relicensed under "GPLv3 or later".

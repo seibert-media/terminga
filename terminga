@@ -11,11 +11,13 @@ from json import loads
 from operator import itemgetter
 from os import execv, fdopen, remove, close
 from os.path import expanduser
+from queue import Empty, Queue
 from shlex import split
 from subprocess import Popen, check_output
 from sys import argv
 from tempfile import mkstemp
 from textwrap import wrap
+from threading import Thread
 from time import sleep
 from traceback import print_exc
 
@@ -457,6 +459,7 @@ def standard_status(
     use_group_filters,
     refresh_delta,
     refresh_every,
+    fetching,
     scroll_current,
     scroll_max,
 ):
@@ -474,7 +477,10 @@ def standard_status(
     fill_len = 10
     fill = int(fill_len * fraction)
     fill_pad = fill_len - fill
-    refresh_bar = '[' + '#' * fill + '-' * fill_pad + ']'
+    if fetching:
+        refresh_bar = '[refreshing]'
+    else:
+        refresh_bar = '[' + '#' * fill + '-' * fill_pad + ']'
 
     if scroll_max > 0:
         scroll_fraction = scroll_current / scroll_max
@@ -494,8 +500,8 @@ def standard_status(
     return msg
 
 
-def scroll_if_needed(current, force_jump_to_top, offset, height, bottompad, starty, len_to_display):
-    if force_jump_to_top or len_to_display < height:
+def scroll_if_needed(current, offset, height, bottompad, starty, len_to_display):
+    if len_to_display < height:
         return 0
 
     if current - offset >= (height - bottompad) - starty:
@@ -539,6 +545,21 @@ def wrap_output(item, width):
             item.output_lines_wrapped.append(wrapped_line)
 
 
+def fetch_in_background(icinga, results):
+    # Daemon thread, so quitting doesn't have to wait for a request
+    # that's still in flight.
+    def worker():
+        try:
+            results.put(icinga.get_current_state())
+        except (ConnectionError, HTTPError, Timeout):
+            results.put(None)
+        except Exception as e:
+            # Re-raised in the main thread.
+            results.put(e)
+
+    Thread(target=worker, daemon=True).start()
+
+
 def interact(win, icinga, config):
     curses.curs_set(False)
 
@@ -552,17 +573,21 @@ def interact(win, icinga, config):
     filters = []
 
     filter_dirty = True
-    force_refresh = False
+    force_refresh = True
+    fetching = False
+    jump_pending = False
+    refresh_pending = False
+    results = Queue()
     icinga_items = None
     only_broken = True
     scroll_dirty = True
     selected = set()
     show_help = False
-    force_jump_to_top = False
     show_output_detail = config['show_detailed_output_on_startup']
 
     refresh_every = timedelta(seconds=30)
     refresh_delta = timedelta(seconds=0)
+    last_refresh = datetime.now()
 
     current = 0
     current_item = None
@@ -579,19 +604,36 @@ def interact(win, icinga, config):
     while True:
         height, width = win.getmaxyx()
 
-        if icinga_items is None or force_refresh:
-            status(win, 'Refreshing ...')
-            win.refresh()
-
-            selected = set()
-            try:
-                icinga_items = icinga.get_current_state()
-            except (ConnectionError, HTTPError, Timeout):
-                icinga_items = None
-            last_key = datetime.now()
+        try:
+            icinga_items = results.get_nowait()
+        except Empty:
+            pass
+        else:
+            if isinstance(icinga_items, Exception):
+                raise icinga_items
+            fetching = False
+            if icinga_items is None:
+                selected = set()
+            else:
+                # Keep selections, but drop items that no longer exist.
+                selected &= set(icinga_items['hosts'] + icinga_items['services'])
+            last_refresh = datetime.now()
             refresh_delta = timedelta(seconds=0)
             filter_dirty = True
             scroll_dirty = True
+            jump_pending = True
+            if refresh_pending:
+                force_refresh = True
+                refresh_pending = False
+
+        if force_refresh:
+            if fetching:
+                # The request in flight might predate whatever triggered
+                # this refresh (e.g. an ACK), so fetch again afterwards.
+                refresh_pending = True
+            else:
+                fetch_in_background(icinga, results)
+                fetching = True
             force_refresh = False
 
         if filter_dirty and icinga_items is not None:
@@ -601,25 +643,24 @@ def interact(win, icinga, config):
                 config['hide_ack_from_broken'],
                 filters,
             ))
+            # Keep the cursor on the same item, if it's still there.
+            current, current_item = determine_current(
+                current,
+                current_item,
+                to_display,
+            )
             scroll_dirty = True
             filter_dirty = False
 
         if scroll_dirty:
-            if config['jump_to_first_unhandled']:
+            # Only jump when new data arrived, not on cursor movement.
+            if config['jump_to_first_unhandled'] and jump_pending:
                 for i, item in enumerate(to_display):
                     if item.acknowledgement + item.downtime_depth == 0:
                         current = i
                         current_item = item
                         break
-            elif force_jump_to_top:
-                current = 0
-                current_item = None
-
-                current, current_item = determine_current(
-                    current,
-                    current_item,
-                    to_display,
-                )
+            jump_pending = False
 
             if len(to_display) > 0:
                 if current < 0:
@@ -635,7 +676,6 @@ def interact(win, icinga, config):
 
             offset = scroll_if_needed(
                 current,
-                force_jump_to_top,
                 offset,
                 height,
                 bottompad,
@@ -646,7 +686,6 @@ def interact(win, icinga, config):
             detailed_output_offset = 0
 
             scroll_dirty = False
-            force_jump_to_top = False
 
         win.erase()
         title(win, HELP)
@@ -655,8 +694,11 @@ def interact(win, icinga, config):
             show_help_screen(win)
             status(win, '')
         elif icinga_items is None:
-            status(win, 'NO CONNECTION TO ICINGA')
-            red_body(win)
+            if fetching:
+                status(win, 'Refreshing ...')
+            else:
+                status(win, 'NO CONNECTION TO ICINGA')
+                red_body(win)
         else:
             status(
                 win,
@@ -667,6 +709,7 @@ def interact(win, icinga, config):
                     icinga.settings['use_group_filters'],
                     refresh_delta,
                     refresh_every,
+                    fetching,
                     current,
                     len(to_display),
                 ),
@@ -694,7 +737,8 @@ def interact(win, icinga, config):
             height -= border_pane
 
         win.refresh()
-        win.timeout(1000)
+        # Poll more often while fetching, so new data shows up promptly.
+        win.timeout(100 if fetching else 1000)
         try:
             char = win.getkey()
         except:
@@ -845,15 +889,9 @@ def interact(win, icinga, config):
             current -= int(0.5 * (height - starty))
             scroll_dirty = True
 
-        if char is not None:
-            last_key = datetime.now()
-            refresh_delta = timedelta(seconds=0)
-        else:
-            refresh_delta = datetime.now() - last_key
-            if refresh_delta > refresh_every:
-                force_refresh = True
-                force_jump_to_top = True
-                last_key = datetime.now()
+        refresh_delta = datetime.now() - last_refresh
+        if not fetching and refresh_delta > refresh_every:
+            force_refresh = True
 
 
 def get_auth_from_config(config):
